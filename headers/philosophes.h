@@ -9,4 +9,6 @@
 
 int philosophers(int n_philosophers);
 
-#endif //LINFO1252_PROJECT_1_PHILOSOPHES_H
+void mange(int id);
+
+#endif // LINFO1252_PROJECT_1_PHILOSOPHES_H
