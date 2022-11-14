@@ -63,15 +63,15 @@ help:
 
 # Rule for link and generate the binary file
 all: $(OBJECTS)
-	@echo -en "$(BROWN)LD $(END_COLOR)";
+	@echo -en "LD ";
 	$(CC) -o $(BINDIR)/binary $+ $(DEBUG) $(CFLAGS) $(LIBS)
 	@echo -en "\n--\nBinary file placed at" \
-			  "$(BROWN)$(BINDIR)/binary$(END_COLOR)\n";
+			  "$(BINDIR)/binary\n";
 
 
 # Rule for object binaries compilation
 $(LIBDIR)/%.o: $(SRCDIR)/%.$(SRCEXT)
-	@echo -en "$(BROWN)CC $(END_COLOR)";
+	@echo -en "CC ";
 	$(CC) -c $^ -o $@ $(DEBUG) $(CFLAGS) $(LIBS)
 
 
@@ -88,10 +88,10 @@ valgrind:
 
 # Compile tests and run the test binary
 tests:
-	@echo -en "$(BROWN)CC $(END_COLOR)";
+	@echo -en "CC";
 	$(CC) $(TESTDIR)/main.c -o $(BINDIR)/$(TEST_BINARY) $(DEBUG) $(CFLAGS) $(LIBS) $(TEST_LIBS)
 	@which ldconfig && ldconfig -C /tmp/ld.so.cache || true # caching the library linking
-	@echo -en "$(BROWN) Running tests: $(END_COLOR)";
+	@echo -en " Running tests: ";
 	./$(BINDIR)/$(TEST_BINARY)
 
 
