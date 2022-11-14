@@ -43,13 +43,15 @@ default: all
 $(LIBDIR)/%.o: $(SRCDIR)/%.c
 	$(CC) -c $^ -o $@ $(DEBUG) $(CFLAGS) $(LIBS)
 
+# Clean, compile, and run binary
+run: clean all
+	./$(BINDIR)/binary
 
 # Rule for link and generate the binary file
 all: main.c $(OBJECTS)
 	$(CC) -o $(BINDIR)/binary $+ $(DEBUG) $(CFLAGS) $(LIBS)
 	@echo "\nBinary file placed at" \
 			  "$(BINDIR)/binary\n";
-	./$(BINDIR)/binary
 
 
 # Compile tests and run the test binary

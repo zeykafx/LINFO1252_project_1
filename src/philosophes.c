@@ -7,19 +7,21 @@
 #include "../headers/philosophes.h"
 
 void mange(int id) {
-    printf("philosophers %d is eating\n", id);
+    // printf("philosophers %d is eating\n", id);
 }
 
 typedef struct philosophers_args {
     int number_of_philosophers;
     int id;
-    pthread_mutex_t baguette[];
+    pthread_mutex_t *baguette;
 } philosophers_args_t;
 
 void *philosopher(void *arg) {
     philosophers_args_t *args = (philosophers_args_t *) arg;
     int left = args->id;
     int right = (left + 1) % args->number_of_philosophers;
+
+    printf("left: %d, right: %d\n", left, right);
     for (int i = 0; i < CYCLES; ++i) {
         // thinking...
         if (left < right) {
@@ -50,7 +52,7 @@ int philosophers(int n_philosophers) {
     pthread_t phil[n_philosophers];
 
     for (int i = 0; i < n_philosophers; ++i) {
-        int err = pthread_mutex_init( &baguette[i], NULL);
+        int err = pthread_mutex_init(&baguette[i], NULL);
         if(err != 0) {
             perror("Failed to init philosophers mutex");
         }
@@ -58,6 +60,7 @@ int philosophers(int n_philosophers) {
         args_buffer[i] = malloc(sizeof(philosophers_args_t));
         args_buffer[i]->number_of_philosophers = n_philosophers;
         args_buffer[i]->id = i;
+        args_buffer[i]->baguette = baguette;
 
         err = pthread_create(&phil[i], NULL, philosopher, (void *) args_buffer[i]);
         if (err != 0) {
