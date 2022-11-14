@@ -1,0 +1,12 @@
+image:
+  file: .gitpod.Dockerfile
+tasks:
+  - init: |
+      make
+    command: |
+      make help
+vscode:
+  extensions:
+    - ms-vscode.cpptools
+    - notskm.clang-tidy
+    - llvm-vs-code-extensions.vscode-clangd
