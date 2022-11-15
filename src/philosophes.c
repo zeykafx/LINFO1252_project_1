@@ -6,12 +6,6 @@
 #include <stdlib.h>
 #include "../headers/philosophes.h"
 
-typedef struct philosophers_args {
-    int number_of_philosophers;
-    int id;
-    pthread_mutex_t *baguette;
-} philosophers_args_t;
-
 void *philosopher(void *arg) {
     philosophers_args_t *args = (philosophers_args_t *) arg;
 
@@ -22,7 +16,9 @@ void *philosopher(void *arg) {
     for (int i = 0; i < CYCLES; ++i) {
         
         // thinking...
-        printf("philosopher %d is thinking\n", args->id);
+        if (args->verbose) {
+            printf("philosopher %d is thinking\n", args->id);
+        }
 
         if (left < right) {
             pthread_mutex_lock(&args->baguette[left]);
@@ -33,7 +29,9 @@ void *philosopher(void *arg) {
         }
 
         // eating ...
-        printf("philosopher %d is eating\n", args->id);
+        if (args->verbose) {
+            printf("philosopher %d is eating\n", args->id);
+        }
         
         pthread_mutex_unlock(&args->baguette[left]);
         pthread_mutex_unlock(&args->baguette[right]);
@@ -43,7 +41,12 @@ void *philosopher(void *arg) {
 
 
 
-void philosophers(int n_philosophers) {
+void philosophers(int n_philosophers, bool verbose) {
+    if (n_philosophers < 2) {
+        fprintf(stderr, "Cannot run the philosophers problem with only one philosopher (thread)!\n");
+        exit(EXIT_FAILURE);
+    }
+
     pthread_t phil[n_philosophers];
     pthread_mutex_t baguette[n_philosophers];
 
@@ -65,6 +68,7 @@ void philosophers(int n_philosophers) {
         args_buffer[i]->number_of_philosophers = n_philosophers;
         args_buffer[i]->id = i;
         args_buffer[i]->baguette = baguette;
+        args_buffer[i]->verbose = verbose;
 
         err = pthread_create(&phil[i], NULL, philosopher, (void *) args_buffer[i]);
         if (err != 0) {

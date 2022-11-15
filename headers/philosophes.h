@@ -1,13 +1,17 @@
-//
-// Created by corentin on 11/14/22.
-//
-
-#ifndef LINFO1252_PROJECT_1_PHILOSOPHES_H
-#define LINFO1252_PROJECT_1_PHILOSOPHES_H
-
-#define CYCLES 100000
-
-void philosophers(int n_philosophers);
+#pragma once
+#include <pthread.h>
+#include <stdbool.h>
 
 
-#endif // LINFO1252_PROJECT_1_PHILOSOPHES_H
+#define CYCLES 10
+
+
+typedef struct philosophers_args {
+    int number_of_philosophers;
+    int id;
+    pthread_mutex_t *baguette;
+    bool verbose;
+} philosophers_args_t;
+
+
+void philosophers(int n_philosophers, bool verbose);
