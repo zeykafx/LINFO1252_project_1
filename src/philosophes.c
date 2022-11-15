@@ -6,10 +6,6 @@
 #include <stdlib.h>
 #include "../headers/philosophes.h"
 
-void mange(int id) {
-    // printf("philosophers %d is eating\n", id);
-}
-
 typedef struct philosophers_args {
     int number_of_philosophers;
     int id;
@@ -18,12 +14,16 @@ typedef struct philosophers_args {
 
 void *philosopher(void *arg) {
     philosophers_args_t *args = (philosophers_args_t *) arg;
+
     int left = args->id;
     int right = (left + 1) % args->number_of_philosophers;
-
     printf("left: %d, right: %d\n", left, right);
+
     for (int i = 0; i < CYCLES; ++i) {
+        
         // thinking...
+        printf("philosopher %d is thinking\n", args->id);
+
         if (left < right) {
             pthread_mutex_lock(&args->baguette[left]);
             pthread_mutex_lock(&args->baguette[right]);
@@ -31,7 +31,10 @@ void *philosopher(void *arg) {
             pthread_mutex_lock(&args->baguette[right]);
             pthread_mutex_lock(&args->baguette[left]);
         }
-        mange(args->id);
+
+        // eating ...
+        printf("philosopher %d is eating\n", args->id);
+        
         pthread_mutex_unlock(&args->baguette[left]);
         pthread_mutex_unlock(&args->baguette[right]);
     }
@@ -40,21 +43,22 @@ void *philosopher(void *arg) {
 
 
 
-int philosophers(int n_philosophers) {
+void philosophers(int n_philosophers) {
+    pthread_t phil[n_philosophers];
     pthread_mutex_t baguette[n_philosophers];
 
-    philosophers_args_t **args_buffer =  calloc(n_philosophers, n_philosophers * sizeof(philosophers_args_t *));
+    philosophers_args_t **args_buffer = malloc(n_philosophers * sizeof(philosophers_args_t *));
     if (args_buffer == NULL) {
         perror("Failed to init args buffer for philosophers");
         exit(EXIT_FAILURE);
     }
 
-    pthread_t phil[n_philosophers];
 
     for (int i = 0; i < n_philosophers; ++i) {
         int err = pthread_mutex_init(&baguette[i], NULL);
         if(err != 0) {
             perror("Failed to init philosophers mutex");
+            exit(EXIT_FAILURE);
         }
 
         args_buffer[i] = malloc(sizeof(philosophers_args_t));
@@ -65,6 +69,7 @@ int philosophers(int n_philosophers) {
         err = pthread_create(&phil[i], NULL, philosopher, (void *) args_buffer[i]);
         if (err != 0) {
             perror("Failed to create philosophers thread");
+            exit(EXIT_FAILURE);
         }
     }
 
@@ -73,6 +78,7 @@ int philosophers(int n_philosophers) {
       int err = pthread_join(phil[i], NULL);
       if(err!=0) {
         perror("Failed to join philosopher thread");
+        exit(EXIT_FAILURE);
       }
    }
 
@@ -81,10 +87,11 @@ int philosophers(int n_philosophers) {
         int err = pthread_mutex_destroy( &baguette[i]);
         if(err != 0) {
             perror("Failed to destroy philosophers mutex");
+            exit(EXIT_FAILURE);
         }
         free(args_buffer[i]);
     }
     free(args_buffer);
 
-    return 69;
+    return;
 }

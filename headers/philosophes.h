@@ -7,8 +7,7 @@
 
 #define CYCLES 100000
 
-int philosophers(int n_philosophers);
+void philosophers(int n_philosophers);
 
-void mange(int id);
 
 #endif // LINFO1252_PROJECT_1_PHILOSOPHES_H

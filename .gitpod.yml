@@ -4,7 +4,7 @@ tasks:
   - init: |
       make
     command: |
-      make help
+      make tests
 vscode:
   extensions:
     - ms-vscode.cpptools

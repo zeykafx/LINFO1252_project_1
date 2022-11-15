@@ -47,7 +47,7 @@ $(LIBDIR)/%.o: $(SRCDIR)/%.c
 run: clean all
 	./$(BINDIR)/binary
 
-# Rule for link and generate the binary file
+# link and generate the binary file
 all: main.c $(OBJECTS)
 	$(CC) -o $(BINDIR)/binary $+ $(DEBUG) $(CFLAGS) $(LIBS)
 	@echo "\nBinary file placed at" \
@@ -67,7 +67,6 @@ clean:
 
 .PHONY: clean tests
 
-# Rule for run valgrind tool
 valgrind:
 	valgrind \
 		--track-origins=yes \
