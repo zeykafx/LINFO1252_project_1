@@ -35,7 +35,7 @@ void producer_consumer(int n_prods, int n_cons, bool verbose) {
 
     // shared buffer used to indicate which index of the normal shared buffer has a produced
     // item ready to be consumed
-    consumed_buffer = calloc(BUFFER_SIZE, BUFFER_SIZE * sizeof(short int));
+    consumed_buffer = calloc(BUFFER_SIZE, BUFFER_SIZE * sizeof(int));
     if (consumed_buffer == NULL) {
         perror("Failed to malloc consumed buffer");
         exit(EXIT_FAILURE);
@@ -163,6 +163,7 @@ void *producer(void *args) {
 
         } else {
             // else if all the elements have been produced, exit the loop
+            sem_post(&full);
             break;
         }
 
@@ -219,6 +220,7 @@ void *consumer(void *args) {
 
         } else {
             // if we consumed all the elements, then we exit
+            sem_post(&empty);
             break;
         }
 
