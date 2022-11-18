@@ -3,7 +3,7 @@
 #include <stdbool.h>
 
 
-#define CYCLES 10
+#define CYCLES_PHILOSOPHERS 10
 
 
 typedef struct philosophers_args {

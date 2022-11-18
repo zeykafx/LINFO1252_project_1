@@ -13,7 +13,7 @@ void *philosopher(void *arg) {
     int right = (left + 1) % args->number_of_philosophers;
     printf("left: %d, right: %d\n", left, right);
 
-    for (int i = 0; i < CYCLES; ++i) {
+    for (int i = 0; i < CYCLES_PHILOSOPHERS; ++i) {
         
         // thinking...
         if (args->verbose) {
