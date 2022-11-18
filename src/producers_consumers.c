@@ -4,9 +4,11 @@
 #include <stdlib.h>
 #include <semaphore.h>
 #include <unistd.h>
+
 pthread_mutex_t mutex;
 sem_t empty;
 sem_t full;
+
 int produced_elements = 0;
 int consumed_elements = 0;
 
@@ -88,6 +90,7 @@ void producer_consumer(int n_prods, int n_cons, bool verbose) {
         free(prod_args[i]);
     }
     free(prod_args);
+    printf("Joined all producers\n");
 
     // consumer: join and clean up
     for (int i = 0; i < n_cons; ++i) {
@@ -98,15 +101,18 @@ void producer_consumer(int n_prods, int n_cons, bool verbose) {
         }
         free(cons_args[i]);
     }
-    free(cons_args);
+    printf("Joined all consumers\n");
 
-    for (int i = 0; i < n_prods; ++i) {
-        int err = pthread_mutex_destroy(&mutex);
-        if (err != 0) {
-            perror("Failed to destroy prod cons mutex");
-            exit(EXIT_FAILURE);
-        }
+    free(cons_args);
+    free(consumed_buffer);
+    free(buffer);
+
+    int err = pthread_mutex_destroy(&mutex);
+    if (err != 0) {
+        perror("Failed to destroy prod cons mutex");
+        exit(EXIT_FAILURE);
     }
+
 }
 
 // Producteur
@@ -131,6 +137,9 @@ void *producer(void *args) {
                 }
             }
         } else {
+            pthread_mutex_unlock(&mutex);
+            sem_post(&full);
+
             break;
         }
         pthread_mutex_unlock(&mutex);
@@ -141,7 +150,7 @@ void *producer(void *args) {
             usleep(5);
         }
     }
-    return (NULL);
+    pthread_exit(NULL);
 }
 
 
@@ -170,6 +179,9 @@ void *consumer(void *args) {
                 }
             }
         } else {
+            pthread_mutex_unlock(&mutex);
+            sem_post(&empty); // il y a une place libre en plus
+
             break;
         }
 
@@ -181,5 +193,5 @@ void *consumer(void *args) {
             usleep(5);
         }
     }
-    return (NULL);
+    pthread_exit(NULL);
 }
