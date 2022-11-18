@@ -35,7 +35,7 @@ void producer_consumer(int n_prods, int n_cons, bool verbose) {
 
     // shared buffer used to indicate which index of the normal shared buffer has a produced
     // item ready to be consumed
-    consumed_buffer = calloc(BUFFER_SIZE, BUFFER_SIZE * sizeof(int));
+    consumed_buffer = calloc(BUFFER_SIZE, sizeof(int));
     if (consumed_buffer == NULL) {
         perror("Failed to malloc consumed buffer");
         exit(EXIT_FAILURE);
@@ -107,6 +107,7 @@ void producer_consumer(int n_prods, int n_cons, bool verbose) {
         free(cons_args[i]);
     }
     free(cons_args);
+
     if (verbose) {
         printf("Joined all consumers\n");
     }
@@ -122,6 +123,8 @@ void producer_consumer(int n_prods, int n_cons, bool verbose) {
 
     sem_destroy(&empty);
     sem_destroy(&full);
+
+    printf("Finished running the Producer Consumers problem\n");
 }
 
 
@@ -168,10 +171,8 @@ void *producer(void *args) {
         }
 
         // simulate busy work
-        int j = 0;
-        for (int i = 0; i < BUSY_WORK_CYCLES; i++) {
-            j += i;
-        }
+        for (int i = 0; i < BUSY_WORK_CYCLES; i++) {}
+
     }
     pthread_exit(NULL);
 }
@@ -225,10 +226,8 @@ void *consumer(void *args) {
         }
 
         // simulate busy work
-        int j = 0;
-        for (int i = 0; i < BUSY_WORK_CYCLES; i++) {
-            j += i;
-        }
+        for (int i = 0; i < BUSY_WORK_CYCLES; i++) {}
+
     }
     pthread_exit(NULL);
 }

@@ -12,7 +12,7 @@ int *consumed_buffer;
 typedef struct prod_cons_args {
     bool verbose;
     int id;
-}prod_cons_args_t;
+} prod_cons_args_t;
 
 void producer_consumer(int n_prods, int n_cons, bool verbose);
 
