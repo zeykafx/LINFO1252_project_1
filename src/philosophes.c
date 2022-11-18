@@ -1,45 +1,7 @@
-//
-// Created by corentin on 11/14/22.
-//
 #include <stdio.h>
 #include <pthread.h>
 #include <stdlib.h>
 #include "../headers/philosophes.h"
-
-void *philosopher(void *arg) {
-    philosophers_args_t *args = (philosophers_args_t *) arg;
-
-    int left = args->id;
-    int right = (left + 1) % args->number_of_philosophers;
-    printf("left: %d, right: %d\n", left, right);
-
-    for (int i = 0; i < CYCLES_PHILOSOPHERS; ++i) {
-        
-        // thinking...
-        if (args->verbose) {
-            printf("philosopher %d is thinking\n", args->id);
-        }
-
-        if (left < right) {
-            pthread_mutex_lock(&args->baguette[left]);
-            pthread_mutex_lock(&args->baguette[right]);
-        } else {
-            pthread_mutex_lock(&args->baguette[right]);
-            pthread_mutex_lock(&args->baguette[left]);
-        }
-
-        // eating ...
-        if (args->verbose) {
-            printf("philosopher %d is eating\n", args->id);
-        }
-        
-        pthread_mutex_unlock(&args->baguette[left]);
-        pthread_mutex_unlock(&args->baguette[right]);
-    }
-    return (NULL);
-}
-
-
 
 void philosophers(int n_philosophers, bool verbose) {
     if (n_philosophers < 2) {
@@ -56,10 +18,10 @@ void philosophers(int n_philosophers, bool verbose) {
         exit(EXIT_FAILURE);
     }
 
-
+    // for each philosopher, we create a mutex, a thread, and we start the thread
     for (int i = 0; i < n_philosophers; ++i) {
         int err = pthread_mutex_init(&baguette[i], NULL);
-        if(err != 0) {
+        if (err != 0) {
             perror("Failed to init philosophers mutex");
             exit(EXIT_FAILURE);
         }
@@ -78,18 +40,20 @@ void philosophers(int n_philosophers, bool verbose) {
     }
 
 
+    // joining all the philosophers, this will block and wait for them to finish
     for (int i = 0; i < n_philosophers; i++) {
-      int err = pthread_join(phil[i], NULL);
-      if(err!=0) {
-        perror("Failed to join philosopher thread");
-        exit(EXIT_FAILURE);
-      }
-   }
+        int err = pthread_join(phil[i], NULL);
+        if (err != 0) {
+            perror("Failed to join philosopher thread");
+            exit(EXIT_FAILURE);
+        }
+    }
 
 
+    // clean up
     for (int i = 0; i < n_philosophers; ++i) {
-        int err = pthread_mutex_destroy( &baguette[i]);
-        if(err != 0) {
+        int err = pthread_mutex_destroy(&baguette[i]);
+        if (err != 0) {
             perror("Failed to destroy philosophers mutex");
             exit(EXIT_FAILURE);
         }
@@ -97,5 +61,41 @@ void philosophers(int n_philosophers, bool verbose) {
     }
     free(args_buffer);
 
-    return;
+}
+
+void *philosopher(void *arg) {
+    philosophers_args_t *args = (philosophers_args_t *) arg;
+
+    int left = args->id;
+    int right = (left + 1) % args->number_of_philosophers;
+
+    if (args->verbose) {
+        printf("left: %d, right: %d\n", left, right);
+    }
+
+    for (int i = 0; i < CYCLES_PHILOSOPHERS; ++i) {
+
+        // thinking...
+        if (args->verbose) {
+            printf("philosopher %d is thinking\n", args->id);
+        }
+
+        if (left < right) {
+            pthread_mutex_lock(&args->baguette[left]);
+            pthread_mutex_lock(&args->baguette[right]);
+        } else {
+            pthread_mutex_lock(&args->baguette[right]);
+            pthread_mutex_lock(&args->baguette[left]);
+        }
+
+        // eating ...
+        if (args->verbose) {
+            printf("philosopher %d is eating\n", args->id);
+        }
+
+        pthread_mutex_unlock(&args->baguette[left]);
+        pthread_mutex_unlock(&args->baguette[right]);
+    }
+
+    pthread_exit(NULL);
 }

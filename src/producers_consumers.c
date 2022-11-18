@@ -9,14 +9,13 @@ pthread_mutex_t mutex;
 sem_t empty;
 sem_t full;
 
-int produced_elements = 0;
-int consumed_elements = 0;
+volatile int produced_elements = 0;
+volatile int consumed_elements = 0;
 
 
 void producer_consumer(int n_prods, int n_cons, bool verbose) {
 
     pthread_t prods[n_prods], cons[n_cons];
-
 
     int error = pthread_mutex_init(&mutex, NULL);
     if (error != 0) {
@@ -27,19 +26,22 @@ void producer_consumer(int n_prods, int n_cons, bool verbose) {
     sem_init(&empty, 0, BUFFER_SIZE);  // buffer vide
     sem_init(&full, 0, 0);             // buffer vide
 
+    // shared buffer, this will store the produced items
     buffer = malloc(BUFFER_SIZE * sizeof(int));
     if (buffer == NULL) {
         perror("Failed to malloc shared buffer");
         exit(EXIT_FAILURE);
     }
 
+    // shared buffer used to indicate which index of the normal shared buffer has a produced
+    // item ready to be consumed
     consumed_buffer = calloc(BUFFER_SIZE, BUFFER_SIZE * sizeof(short int));
     if (consumed_buffer == NULL) {
         perror("Failed to malloc consumed buffer");
         exit(EXIT_FAILURE);
     }
 
-    // PRODS ------
+    // PRODUCERS initialization ------
     prod_cons_args_t **prod_args = malloc(n_prods * sizeof(prod_cons_args_t *));
     if (prod_args == NULL) {
         perror("Failed to malloc prod args array");
@@ -59,7 +61,7 @@ void producer_consumer(int n_prods, int n_cons, bool verbose) {
         pthread_create(&prods[i], NULL, producer, (void *) prod_args[i]);
     }
 
-    // CONS ---
+    // CONSUMERS initialization ---
     prod_cons_args_t **cons_args = malloc(n_cons * sizeof(prod_cons_args_t *));
     if (cons_args == NULL) {
         perror("Failed to malloc cons args array");
@@ -73,10 +75,10 @@ void producer_consumer(int n_prods, int n_cons, bool verbose) {
             exit(EXIT_FAILURE);
         }
 
-        cons_args[i]->id = n_prods + i;
+        cons_args[i]->id = i;
         cons_args[i]->verbose = verbose;
 
-        pthread_create(&cons[i], NULL, consumer, (void *) prod_args[i]);
+        pthread_create(&cons[i], NULL, consumer, (void *) cons_args[i]);
     }
 
 
@@ -90,7 +92,10 @@ void producer_consumer(int n_prods, int n_cons, bool verbose) {
         free(prod_args[i]);
     }
     free(prod_args);
-    printf("Joined all producers\n");
+
+    if (verbose) {
+        printf("Joined all producers\n");
+    }
 
     // consumer: join and clean up
     for (int i = 0; i < n_cons; ++i) {
@@ -101,9 +106,11 @@ void producer_consumer(int n_prods, int n_cons, bool verbose) {
         }
         free(cons_args[i]);
     }
-    printf("Joined all consumers\n");
-
     free(cons_args);
+    if (verbose) {
+        printf("Joined all consumers\n");
+    }
+
     free(consumed_buffer);
     free(buffer);
 
@@ -113,84 +120,112 @@ void producer_consumer(int n_prods, int n_cons, bool verbose) {
         exit(EXIT_FAILURE);
     }
 
+    sem_destroy(&empty);
+    sem_destroy(&full);
 }
 
-// Producteur
+
+// Producer: "produces" integers and places them in the shared buffer at the first possible index
 void *producer(void *args) {
     prod_cons_args_t *arguments = (prod_cons_args_t *) args;
 
     while (true) {
-        sem_wait(&empty); // attente d'une place libre
-        pthread_mutex_lock(&mutex);
+        // produce elements as long as all the producers haven't produced 8192 elements combined
         if (produced_elements < CYCLES) {
-            // section critique
-            for (int j = 0; j < BUFFER_SIZE; j++) {
-                if (consumed_buffer[j] == 0) {
-                    buffer[j] = arguments->id;
-                    produced_elements++;
-                    consumed_buffer[j] = 1;
 
-                    if (arguments->verbose) {
-                        printf("Prod %d produced element index %d: %d\n", arguments->id, j, buffer[j]);
-                        printf("Produced elements: %d\n", produced_elements);
+            sem_wait(&empty); // attente d'une place libre
+            pthread_mutex_lock(&mutex);
+            // section critique
+
+                // search for the first index free where we can place our "produced" integer
+                // (which is just the thread id for simplicity reasons)
+                for (int j = 0; j < BUFFER_SIZE; j++) {
+                    if (consumed_buffer[j] == 0) {
+                        buffer[j] = arguments->id; // "produce" an integer
+                        produced_elements++;
+
+                        // this lets the consumer know that an element at index j is ready to be consumed
+                        consumed_buffer[j] = 1;
+
+                        if (arguments->verbose) {
+                            printf("Producer #%d produced element index %d: %d\n", arguments->id, j, buffer[j]);
+                            printf("Produced elements: %d\n", produced_elements);
+                        }
+
+                        // break after we produced an element,
+                        // otherwise this will continue to produce while the mutex is locked
+                        break;
                     }
                 }
-            }
-        } else {
-            pthread_mutex_unlock(&mutex);
-            sem_post(&full);
 
+            pthread_mutex_unlock(&mutex);
+            sem_post(&full); // il y a une place remplie en plus
+
+        } else {
+            // else if all the elements have been produced, exit the loop
             break;
         }
-        pthread_mutex_unlock(&mutex);
-        sem_post(&full); // il y a une place remplie en plus
 
         // simulate busy work
-        for (int i = 0; i < 10000; i++) {
-            usleep(5);
+        int j = 0;
+        for (int i = 0; i < BUSY_WORK_CYCLES; i++) {
+            j += i;
         }
     }
     pthread_exit(NULL);
 }
 
-
-// Consommateur
+// Consumer: reads the integers from the shared buffer
 void *consumer(void *args) {
     prod_cons_args_t *arguments = (prod_cons_args_t *) args;
 
     while (true) {
-        sem_wait(&full); // attente d'une place remplie
-        pthread_mutex_lock(&mutex);
+        // same thing as producers, run until all the 8192 elements have been consumed
         if (consumed_elements < CYCLES) {
+            sem_wait(&full); // attente d'une place remplie
+            pthread_mutex_lock(&mutex);
             // section critique
-            for (int j = 0; j < BUFFER_SIZE; j++) {
-                if (consumed_buffer[j] == 1) {
-                    consumed_buffer[j] = 0;
-                    consumed_elements++;
-                    if (arguments->verbose) {
-                        printf("Consumer #%d consumed index %d : %d\n", arguments->id, j, buffer[j]);
-                        printf("consumed_buffer : [");
-                        for (int loop = 0; loop < BUFFER_SIZE; loop++) {
-                            printf("%d ", consumed_buffer[loop]);
+
+                // looping over consumed_buffer until an element is 1, meaning the element at the
+                // same index in buffer is ready to be consumed
+                for (int j = 0; j < BUFFER_SIZE; j++) {
+                    if (consumed_buffer[j] == 1) {
+
+                        // we have nothing to do with the produced element, so we kinda just ignore it,
+                        // it will be overwritten by a producer
+                        // int element = buffer[j]; // this is the element produced
+
+                        // reset index j to 0 since we "consumed" the element
+                        consumed_buffer[j] = 0;
+                        consumed_elements++;
+
+                        if (arguments->verbose) {
+                            printf("Consumer #%d consumed index %d : %d\n", arguments->id, j, buffer[j]);
+                            printf("consumed_buffer : [");
+                            for (int loop = 0; loop < BUFFER_SIZE; loop++) {
+                                printf("%d ", consumed_buffer[loop]);
+                            }
+                            printf("]\n");
+                            printf("Consumed elements: %d\n", consumed_elements);
                         }
-                        printf("]\n");
-                        printf("Consumed elements: %d\n", consumed_elements);
+
+                        // break after we consumed an element, to avoid having this run too much
+                        break;
                     }
                 }
-            }
-        } else {
+
             pthread_mutex_unlock(&mutex);
             sem_post(&empty); // il y a une place libre en plus
 
+        } else {
+            // if we consumed all the elements, then we exit
             break;
         }
 
-        pthread_mutex_unlock(&mutex);
-        sem_post(&empty); // il y a une place libre en plus
-
-        // faut bien travailler
-        for (int i = 0; i < 10000; i++) {
-            usleep(5);
+        // simulate busy work
+        int j = 0;
+        for (int i = 0; i < BUSY_WORK_CYCLES; i++) {
+            j += i;
         }
     }
     pthread_exit(NULL);

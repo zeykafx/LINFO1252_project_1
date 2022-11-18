@@ -3,7 +3,7 @@
 #include <stdbool.h>
 
 
-#define CYCLES_PHILOSOPHERS 10
+#define CYCLES_PHILOSOPHERS 100000
 
 
 typedef struct philosophers_args {
@@ -15,3 +15,5 @@ typedef struct philosophers_args {
 
 
 void philosophers(int n_philosophers, bool verbose);
+
+void *philosopher(void *arg);

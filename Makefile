@@ -17,7 +17,7 @@ STD := -std=gnu99
 WARNS := -Wall -Wextra -pedantic # -pedantic warns on language standards
 
 # Flags for compiling
-CFLAGS := -I headers/ -O3 $(STD) $(WARNS)
+CFLAGS := -I headers/ $(STD) $(WARNS)
 
 # Debug options
 DEBUG := -g3 -DDEBUG=1
@@ -45,7 +45,7 @@ $(LIBDIR)/%.o: $(SRCDIR)/%.c
 
 # Clean, compile, and run binary
 run: clean all
-	./$(BINDIR)/binary -v -c 2 -p 2
+	./$(BINDIR)/binary -v -c 2 -p 1
 
 # link and generate the binary file
 all: main.c $(OBJECTS)
@@ -67,11 +67,12 @@ clean:
 
 .PHONY: clean tests
 
-valgrind:
+valgrind: clean all
 	valgrind \
 		--track-origins=yes \
 		--leak-check=full \
+		--show-leak-kinds=all \
 		--leak-resolution=high \
 		--log-file=$(LOGDIR)/$@.log \
-		$(BINDIR)/binary
+		$(BINDIR)/binary -v -c 2 -p 1 # TODO: causes a segfault
 	@echo "\nCheck the log file: $(LOGDIR)/$@.log\n"
