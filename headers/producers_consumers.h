@@ -3,7 +3,6 @@
 
 #define BUFFER_SIZE 8
 #define CYCLES 8192
-//#define CYCLES 16
 #define BUSY_WORK_CYCLES 10000
 
 int *buffer;

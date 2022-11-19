@@ -37,7 +37,7 @@ void reader_writer(int n_reader, int n_writer, bool verbose) {
     sem_init(&rsem, 0, 1);
     sem_init(&wsem, 0, 1);
 
-    // Writers: init and start
+    // Writers: init and start -------
     reader_writer_args_t **writer_args = malloc(n_writer * sizeof(reader_writer_args_t *));
     if (writer_args == NULL) {
         perror("Failed to init writer args buffer");
@@ -52,11 +52,12 @@ void reader_writer(int n_reader, int n_writer, bool verbose) {
         }
 
         writer_args[i]->verbose = verbose;
+        writer_args[i]->id = i;
 
         pthread_create(&writers[i], NULL, writer, (void *) writer_args[i]);
     }
 
-    // Readers: init and start
+    // Readers: init and start -------
     reader_writer_args_t **reader_args = malloc(n_reader * sizeof(reader_writer_args_t *));
     if (reader_args == NULL) {
         perror("Failed to init reader args buffer");
@@ -71,6 +72,8 @@ void reader_writer(int n_reader, int n_writer, bool verbose) {
         }
 
         reader_args[i]->verbose = verbose;
+        reader_args[i]->id = i;
+
 
         pthread_create(&readers[i], NULL, reader, (void *) reader_args[i]);
     }
@@ -131,6 +134,8 @@ void reader_writer(int n_reader, int n_writer, bool verbose) {
 
 
 void *reader(void *args) {
+    reader_writer_args_t *arguments = (reader_writer_args_t *)args;
+
     for (int i = 0; i < WRITER_CYCLES; ++i) {
         pthread_mutex_lock(&readtry);
 
@@ -140,6 +145,9 @@ void *reader(void *args) {
             // section critique
             readcount++;
             if (readcount == 1) {
+                if (arguments->verbose) {
+                    printf("Reader #%d is the first reader, waiting on wsem\n", arguments->id);
+                }
                 sem_wait(&wsem);
             }
         pthread_mutex_unlock(&mutex_readcount);
@@ -148,6 +156,9 @@ void *reader(void *args) {
 
         pthread_mutex_unlock(&readtry);
 
+        if (arguments->verbose) {
+            printf("Reader #%d is reading\n", arguments->id);
+        }
         // simulate busy work - read database
         for (int _ = 0; _ < BUSY_WORK_CYCLES; _++) {}
 
@@ -156,10 +167,16 @@ void *reader(void *args) {
             // section critique
             readcount--;
             if (readcount == 0) {
+                if (arguments->verbose) {
+                    printf("Reader #%d was the last reader\n", arguments->id);
+                }
                 sem_post(&wsem);
             }
         pthread_mutex_unlock(&mutex_readcount);
 
+        if (arguments->verbose) {
+            printf("Reader #%d is processing data read\n", arguments->id);
+        }
         // simulate busy work - process data
         for (int _ = 0; _ < BUSY_WORK_CYCLES; _++) {}
     }
@@ -169,14 +186,22 @@ void *reader(void *args) {
 
 
 void *writer(void *args) {
+    reader_writer_args_t *arguments = (reader_writer_args_t *)args;
+
     for (int i = 0; i < READER_CYCLES; ++i) {
 
+        if (arguments->verbose) {
+            printf("Writer #%d is preparing data\n", arguments->id);
+        }
         // simulate busy work - prepare data
         for (int _ = 0; _ < BUSY_WORK_CYCLES; _++) {}
 
         pthread_mutex_lock(&mutex_writercount);
             writecount++;
             if (writecount == 1) {
+                if (arguments->verbose) {
+                    printf("Writer #%d is the first writer\n", arguments->id);
+                }
                 sem_wait(&rsem);
             }
         pthread_mutex_unlock(&mutex_writercount);
@@ -184,6 +209,9 @@ void *writer(void *args) {
         sem_wait(&wsem);
         // section critique, un seul writer à la fois
 
+        if (arguments->verbose) {
+            printf("Writer #%d is writing data\n", arguments->id);
+        }
         // simulate busy work - write data
         for (int _ = 0; _ < BUSY_WORK_CYCLES; _++) {}
 
@@ -192,6 +220,9 @@ void *writer(void *args) {
         pthread_mutex_lock(&mutex_writercount);
             writecount--;
             if (writecount == 0) {
+                if (arguments->verbose) {
+                    printf("Writer #%d was the last writer\n", arguments->id);
+                }
                 sem_post(&rsem);
             }
         pthread_mutex_unlock(&mutex_writercount);

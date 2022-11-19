@@ -19,7 +19,7 @@ static void set_default_options(options_t *options) {
     options->verbose = false;
 }
 
-static void usage() {
+static void usage(void) {
     fprintf(stderr, "USAGE:\n");
     fprintf(stderr, "    [OPTIONS - You must set the number of threads for at least one option]\n");
     fprintf(stderr, "    -v verbose: shows additionnal information\n");
@@ -38,7 +38,6 @@ int options_parser(int argc, char *argv[], options_t *options) {
     memset(options, 0, sizeof(options_t));
 
     set_default_options(options);
-
 
     int opt;
     while ((opt = getopt(argc, argv, "N:c:p:r:w:v")) != -1) {
@@ -78,11 +77,17 @@ int options_parser(int argc, char *argv[], options_t *options) {
                     return -1;
                 }
                 break;
+            case '?':
+                usage();
+                exit(EXIT_FAILURE);
             case 'v':
                 options->verbose = true;
                 break;
-            default: 
-                usage();
+            case ':':
+                printf("Missing arg for %c\n", optopt);
+                break;
+            default:
+                printf("Use -? to print a help message\n");
                 break;
         }
     }

@@ -13,4 +13,5 @@ void *reader(void *args);
 
 typedef struct reader_writer_args {
     bool verbose;
+    int id;
 } reader_writer_args_t;
