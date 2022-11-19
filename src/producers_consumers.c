@@ -123,13 +123,14 @@ void producer_consumer(int n_prods, int n_cons, bool verbose) {
 
     sem_destroy(&empty);
     sem_destroy(&full);
+
     if (verbose) {
         printf("Finished running the Producer Consumers problem\n");
     }
 }
 
 
-// Producer: "produces" integers and places them in the shared buffer at the first possible index
+// Producer: produces integers and places them in the shared buffer at the first possible index
 void *producer(void *args) {
     prod_cons_args_t *arguments = (prod_cons_args_t *) args;
 
@@ -141,11 +142,11 @@ void *producer(void *args) {
             pthread_mutex_lock(&mutex);
             // section critique
 
-                // search for the first index free where we can place our "produced" integer
-                // (which is just the thread id for simplicity reasons)
+                // search for the first free index where we can place our produced integer
+                // (which is just the thread id)
                 for (int j = 0; j < BUFFER_SIZE; j++) {
                     if (consumed_buffer[j] == 0) {
-                        buffer[j] = arguments->id; // "produce" an integer
+                        buffer[j] = arguments->id; // produce an integer
                         produced_elements++;
 
                         // this lets the consumer know that an element at index j is ready to be consumed

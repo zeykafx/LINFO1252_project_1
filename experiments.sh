@@ -13,7 +13,11 @@ threads=($(seq $MAX_THREADS))
 for pgm in N p,c w,r; do
   IFS=","
   set -- $pgm
-  # $1 for the first element and $2 for the second (if applicable)
+  # use $1 for the first element and $2 for the second (if applicable)
+
+  current_problem=$([[ $1 = "N" ]] && echo "philosophers" || ([[ $1 = "w" ]] && echo "reader/writer" || echo "producer/consumer"))
+  echo "Running $current_problem"
+  echo "$current_problem" >>$FILENAME
 
   for t in "${threads[@]}"; do
     NUM_THREADS=0
@@ -23,7 +27,7 @@ for pgm in N p,c w,r; do
     if [ "$1" = "N" ]; then
       NUM_THREADS=$t
       if [ "$NUM_THREADS" -lt 2 ]; then
-          continue
+        continue
       fi
     else
       # Otherwise, we are either going to run the producer/consumer or the reader/writer problem and we need to divide the number of threads in 2

@@ -53,6 +53,7 @@ void reader_writer(int n_reader, int n_writer, bool verbose) {
 
         writer_args[i]->verbose = verbose;
         writer_args[i]->id = i;
+        writer_args[i]->number_of_threads = n_writer;
 
         pthread_create(&writers[i], NULL, writer, (void *) writer_args[i]);
     }
@@ -73,7 +74,7 @@ void reader_writer(int n_reader, int n_writer, bool verbose) {
 
         reader_args[i]->verbose = verbose;
         reader_args[i]->id = i;
-
+        reader_args[i]->number_of_threads = n_reader;
 
         pthread_create(&readers[i], NULL, reader, (void *) reader_args[i]);
     }
@@ -138,7 +139,7 @@ void reader_writer(int n_reader, int n_writer, bool verbose) {
 void *reader(void *args) {
     reader_writer_args_t *arguments = (reader_writer_args_t *)args;
 
-    for (int i = 0; i < WRITER_CYCLES; ++i) {
+    for (int i = 0; i < WRITER_CYCLES/arguments->number_of_threads; ++i) {
         pthread_mutex_lock(&readtry);
 
         sem_wait(&rsem);
@@ -161,9 +162,9 @@ void *reader(void *args) {
         if (arguments->verbose) {
             printf("Reader #%d is reading\n", arguments->id);
         }
+
         // simulate busy work - read database
         for (int _ = 0; _ < BUSY_WORK_CYCLES; _++) {}
-
 
         pthread_mutex_lock(&mutex_readcount);
             // section critique
@@ -179,8 +180,8 @@ void *reader(void *args) {
         if (arguments->verbose) {
             printf("Reader #%d is processing data read\n", arguments->id);
         }
-        // simulate busy work - process data
-        for (int _ = 0; _ < BUSY_WORK_CYCLES; _++) {}
+//        // simulate busy work - process data
+//        for (int _ = 0; _ < BUSY_WORK_CYCLES; _++) {}
     }
 
     pthread_exit(NULL);
@@ -190,13 +191,13 @@ void *reader(void *args) {
 void *writer(void *args) {
     reader_writer_args_t *arguments = (reader_writer_args_t *)args;
 
-    for (int i = 0; i < READER_CYCLES; ++i) {
+    for (int i = 0; i < READER_CYCLES/arguments->number_of_threads; ++i) {
 
         if (arguments->verbose) {
             printf("Writer #%d is preparing data\n", arguments->id);
         }
-        // simulate busy work - prepare data
-        for (int _ = 0; _ < BUSY_WORK_CYCLES; _++) {}
+//        // simulate busy work - prepare data
+//        for (int _ = 0; _ < BUSY_WORK_CYCLES; _++) {}
 
         pthread_mutex_lock(&mutex_writercount);
             writecount++;

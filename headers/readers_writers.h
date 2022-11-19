@@ -14,4 +14,5 @@ void *reader(void *args);
 typedef struct reader_writer_args {
     bool verbose;
     int id;
+    int number_of_threads;
 } reader_writer_args_t;
