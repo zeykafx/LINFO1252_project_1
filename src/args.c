@@ -40,40 +40,40 @@ int options_parser(int argc, char *argv[], options_t *options) {
     set_default_options(options);
 
     int opt;
-    while ((opt = getopt(argc, argv, "N:c:p:r:w:v")) != -1) {
+    while ((opt = getopt(argc, argv, "N:p:c:w:r:v")) != -1) {
         switch (opt) {
             case 'N':
                 options->number_philosophers = atoi(optarg);
                 if (options->number_philosophers == 0) {
-                    fprintf(stderr, "The number of philosophers must be greater than 0 (each philosopher is a thread), got: %s", optarg);
+                    fprintf(stderr, "The number of philosophers must be greater than 0 (each philosopher is a thread), got: %s\n", optarg);
                     return -1;
                 }
                 break;
             case 'c':
                 options->number_consumers = atoi(optarg);
                 if (options->number_consumers == 0) {
-                    fprintf(stderr, "The number of consumers must be greater than 0 (each consumer is a thread), got: %s", optarg);
+                    fprintf(stderr, "The number of consumers must be greater than 0 (each consumer is a thread), got: %s\n", optarg);
                     return -1;
                 }
                 break;
             case 'p':
                 options->number_producers = atoi(optarg);
-                if (options->number_consumers == 0) {
-                    fprintf(stderr, "The number of producers must be greater than 0 (each producer is a thread), got: %s", optarg);
+                if (options->number_producers == 0) {
+                    fprintf(stderr, "The number of producers must be greater than 0 (each producer is a thread), got: %s\n", optarg);
                     return -1;
                 }
                 break;
             case 'r':
                 options->number_readers = atoi(optarg);
                 if (options->number_readers == 0) {
-                    fprintf(stderr, "The number of readers must be greater than 0 (each reader is a thread), got: %s", optarg);
+                    fprintf(stderr, "The number of readers must be greater than 0 (each reader is a thread), got: %s\n", optarg);
                     return -1;
                 }
                 break;
             case 'w':
                 options->number_writers = atoi(optarg);
                 if (options->number_writers == 0) {
-                    fprintf(stderr, "The number of writers must be greater than 0 (each writer is a thread), got: %s", optarg);
+                    fprintf(stderr, "The number of writers must be greater than 0 (each writer is a thread), got: %s\n", optarg);
                     return -1;
                 }
                 break;

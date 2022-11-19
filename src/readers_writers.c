@@ -1,5 +1,5 @@
 #include "../headers/readers_writers.h"
-#include "producers_consumers.h"
+#include "../headers/producers_consumers.h"
 #include <pthread.h>
 #include <semaphore.h>
 #include <stdio.h>
@@ -129,7 +129,9 @@ void reader_writer(int n_reader, int n_writer, bool verbose) {
     sem_destroy(&wsem);
     sem_destroy(&rsem);
 
-    printf("Finished running the reader writer problem\n");
+    if (verbose) {
+        printf("Finished running the reader writer problem\n");
+    }
 }
 
 

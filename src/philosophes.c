@@ -61,7 +61,9 @@ void philosophers(int n_philosophers, bool verbose) {
     }
     free(args_buffer);
 
-    printf("Finished running the Philosophers problem\n");
+    if (verbose) {
+        printf("Finished running the Philosophers problem\n");
+    }
 }
 
 void *philosopher(void *arg) {

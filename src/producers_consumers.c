@@ -123,8 +123,9 @@ void producer_consumer(int n_prods, int n_cons, bool verbose) {
 
     sem_destroy(&empty);
     sem_destroy(&full);
-
-    printf("Finished running the Producer Consumers problem\n");
+    if (verbose) {
+        printf("Finished running the Producer Consumers problem\n");
+    }
 }
 
 
