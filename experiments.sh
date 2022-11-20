@@ -2,8 +2,10 @@
 
 make -s clean &>/dev/null
 make -s &>/dev/null
-rm ./mesures.csv
-FILENAME=./mesures.csv
+rm ./philosophers.csv
+rm ./reader_writer.csv
+rm ./producer_consumer.csv
+# FILENAME=./philosophers.csv
 
 CORE_COUNT=$(grep ^cpu\\scores /proc/cpuinfo | uniq | awk '{print $4}')
 MAX_THREADS=$((2 * "$CORE_COUNT"))
@@ -15,9 +17,10 @@ for pgm in N p,c w,r; do
   set -- $pgm
   # use $1 for the first element and $2 for the second (if applicable)
 
-  current_problem=$([[ $1 = "N" ]] && echo "philosophers" || ([[ $1 = "w" ]] && echo "reader/writer" || echo "producer/consumer"))
+  current_problem=$([[ $1 = "N" ]] && echo "philosophers" || ([[ $1 = "w" ]] && echo "reader_writer" || echo "producer_consumer"))
   echo "Running $current_problem"
-  echo "$current_problem" >>$FILENAME
+  # echo "$current_problem" >>$FILENAME
+  FILENAME="./$current_problem.csv"
 
   for t in "${threads[@]}"; do
     NUM_THREADS=0
@@ -52,7 +55,10 @@ for pgm in N p,c w,r; do
         # basically, the nested ternary operation just checks if there is a need for a second argument (if we aren't running the philosophers problem)
         # if that's the case, and the number of thread is even, then we return the number of thread for that argument, otherwise we add one to the number of thread and return that sum
         # -> The second arg is always the consumer/reader (because of the outer for loop)
-        /usr/bin/time -f "%e," -o $FILENAME -a ./bin/binary -"$1" $NUM_THREADS "$([[ "$1" != "N" ]] && ([[ "$IS_EVEN" = true ]] && echo "-$2 $NUM_THREADS" || echo "-$2 $((NUM_THREADS + 1))"))"
+        START="$(date +%s.%N)"
+        ./bin/binary -"$1" $NUM_THREADS "$([[ "$1" != "N" ]] && ([[ "$IS_EVEN" = true ]] && echo "-$2 $NUM_THREADS" || echo "-$2 $((NUM_THREADS + 1))"))"
+        # DURATION=$(echo "$(date +%s.%N) - $START" | bc -l)
+        echo "$(date +%s.%N);$START," >>$FILENAME
 
         truncate -s -1 $FILENAME # removes the \n added by time
       done
