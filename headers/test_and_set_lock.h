@@ -5,8 +5,12 @@
 
 void test_and_set_lock(bool verbose, int n_threads);
 
+int test_and_set(int *lock);
+
 void lock(int *lock);
 void unlock(int *lock);
+
+void lock_test_and_test_and_set(int *lock);
 
 void *thread_func(void *args);
 

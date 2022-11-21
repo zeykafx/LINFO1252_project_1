@@ -6,21 +6,6 @@
 #include "../headers/producers_consumers.h"
 
 
-void lock(int *lock) {
-    int value = 1;
-    do {
-        asm volatile ("xchgl %0, %1" : "+a"(value), "+m"(*lock)); // "a" means value goes into eax first, "m" means that lock is read from memory
-        // the "+"" denotes a read and write constraint, found in: https://gcc.gnu.org/onlinedocs/gcc/Extended-Asm.html#Extended-Asm
-    } while (value - (*lock) == 0); // loop while value isn't 1, meaning lock was 0, so another thread had the lock
-
-}
-
-void unlock(int *lock) {
-    int value = 0;
-    asm("xchgl %0, %1" : "+a"(value), "+m"(*lock));
-}
-
-
 void test_and_set_lock(bool verbose, int n_threads) {
     int *lock = malloc(sizeof(int));
     if (lock == NULL) {
@@ -28,6 +13,7 @@ void test_and_set_lock(bool verbose, int n_threads) {
         exit(EXIT_FAILURE);
     }
 
+    *lock = 0;
 
     pthread_t threads[n_threads];
 
@@ -78,12 +64,8 @@ void test_and_set_lock(bool verbose, int n_threads) {
 void *thread_func(void *arg) {
     test_and_set_lock_threads_args_t *args = (test_and_set_lock_threads_args_t *) arg;
     
-    for (int i = 0; i < TEST_SET_THREADS_CYCLE/args->n_threads; ++i) {
-        lock(args->lock);
-
-            if (args->verbose) {
-                printf("thread #%d got the lock and is working\n", args->id);
-            }
+    for (int i = 0; i < TEST_SET_THREADS_CYCLE/(args->n_threads); ++i) {
+        lock_test_and_test_and_set(args->lock);
 
             // simulate busy work
             for (int _ = 0; _ < BUSY_WORK_CYCLES; _++) {}
@@ -96,4 +78,30 @@ void *thread_func(void *arg) {
     }
 
     pthread_exit(NULL);
+}
+
+
+int test_and_set(int *lock) {
+    int value = 1;
+    asm volatile ("xchgl %0, %1" : "+a"(value), "+m"(*lock)); // "a" means value goes into eax first, "m" means that lock is read from memory
+    // the "+"" denotes a read and write constraint, found in: https://gcc.gnu.org/onlinedocs/gcc/Modifiers.html#Modifiers
+    return value;
+}
+
+void lock(int *lock) {
+    int val = 1;
+    do {
+        val = test_and_set(lock);
+    } while (val - (*lock) == 0); // loop while value isn't 1, meaning lock was 0, so another thread had the lock
+}
+
+void unlock(int *lock) {
+    int value = 0;
+    asm volatile ("xchgl %0, %1" : "+a"(value), "+m"(*lock));
+}
+
+void lock_test_and_test_and_set(int *lock) {
+    do {
+        while (*lock == 1) {}
+    } while (test_and_set(lock) == 1);
 }
