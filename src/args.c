@@ -18,6 +18,7 @@ static void set_default_options(options_t *options) {
     options->number_writers = 0;
 
     options->number_test_and_set_lock_threads = 0;
+    options->number_test_and_test_and_set_threads = 0;
 
     options->verbose = false;
 }
@@ -32,6 +33,7 @@ static void usage(void) {
     fprintf(stderr, "    -r number of readers (default: 0): set the number of reader threads\n");
     fprintf(stderr, "    -r number of writers (default: 0): set the number of writer threads\n");
     fprintf(stderr, "    -l number of threads for the test_and_set lock (default: 0)\n");
+    fprintf(stderr, "    -t number of threads for the test_and_test_and_set lock (default: 0)\n");
 }
 
 
@@ -44,7 +46,7 @@ int options_parser(int argc, char *argv[], options_t *options) {
     set_default_options(options);
 
     int opt;
-    while ((opt = getopt(argc, argv, "N:p:c:w:r:l:v")) != -1) {
+    while ((opt = getopt(argc, argv, "N:p:c:w:r:l:t:v")) != -1) {
         switch (opt) {
             case 'N':
                 options->number_philosophers = atoi(optarg);
@@ -88,6 +90,13 @@ int options_parser(int argc, char *argv[], options_t *options) {
                     return -1;
                 }
                 break;
+            case 't':
+                options->number_test_and_test_and_set_threads = atoi(optarg);
+                if (options->number_test_and_test_and_set_threads == 0) {
+                    fprintf(stderr, "The number of threads for the test_and_test_and_set lock must be greater than 0, got: %s\n", optarg);
+                    return -1;
+                }
+                break;
             case '?':
                 usage();
                 exit(EXIT_FAILURE);
@@ -103,12 +112,12 @@ int options_parser(int argc, char *argv[], options_t *options) {
         }
     }
 
-    // // show an error message if no thread number was provided (even if verbose is enabled)
-    // if (optind == 1 || (options->verbose && optind == 2)) {
-    //     fprintf(stderr, "You must set the number of threads for at least one of the options to run the program.\n");
-    //     usage();
-    //     exit(EXIT_FAILURE);
-    // }
+    // show an error message if no thread number was provided (even if verbose is enabled)
+    if (optind == 1 || (options->verbose && optind == 2)) {
+        fprintf(stderr, "You must set the number of threads for at least one of the options to run the program.\n");
+        usage();
+        exit(EXIT_FAILURE);
+    }
 
 
     return 0;

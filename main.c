@@ -24,7 +24,10 @@ int main(int argc, char *argv[]) {
         reader_writer(options.number_readers, options.number_writers, options.verbose);
     }
 
-    test_and_set_lock(options.verbose, options.number_test_and_set_lock_threads);
+    if (options.number_test_and_set_lock_threads > 0 || options.number_test_and_test_and_set_threads > 0) {
+        bool is_simple_test_and_set = options.number_test_and_set_lock_threads > 0;
+        test_and_set_lock(options.verbose, options.number_test_and_set_lock_threads, options.number_test_and_test_and_set_threads, is_simple_test_and_set);
+    }
 
     return EXIT_SUCCESS;
 }

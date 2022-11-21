@@ -9,6 +9,7 @@ rm "$DATA_FOLDER/philosophers.csv"
 rm "$DATA_FOLDER/reader_writer.csv"
 rm "$DATA_FOLDER/producer_consumer.csv"
 rm "$DATA_FOLDER/test_and_set_lock.csv"
+rm "$DATA_FOLDER/test_and_test_and_set_lock.csv"
 # FILENAME=./philosophers.csv
 
 CORE_COUNT=$(grep ^cpu\\scores /proc/cpuinfo | uniq | awk '{print $4}')
@@ -16,12 +17,12 @@ MAX_THREADS=$((2 * "$CORE_COUNT"))
 threads=($(seq $MAX_THREADS))
 
 # Loop over all the arguments
-for pgm in N l p,c w,r; do
+for pgm in N l t p,c w,r; do
   IFS=","
   set -- $pgm
   # use $1 for the first element and $2 for the second (if applicable)
 
-  current_problem=$([[ $1 = "N" ]] && echo "philosophers" || ([[ $1 = "w" ]] && echo "reader_writer" || ([[ $1 = "l" ]] && echo "test_and_set_lock" || echo "producer_consumer")))
+  current_problem=$([[ $1 = "N" ]] && echo "philosophers" || ([[ $1 = "w" ]] && echo "reader_writer" || ([[ $1 = "l" ]] && echo "test_and_set_lock" || ([[ $1 = "t" ]] && echo "test_and_test_and_set_lock" || echo "producer_consumer"))))
   echo "Running $current_problem"
   # echo "$current_problem" >>$FILENAME
   FILENAME="$DATA_FOLDER/$current_problem.csv"
@@ -60,7 +61,7 @@ for pgm in N l p,c w,r; do
         # if that's the case, and the number of thread is even, then we return the number of thread for that argument, otherwise we add one to the number of thread and return that sum
         # -> The second arg is always the consumer/reader (because of the outer for loop)
         START="$(date +%s.%N)"
-        ./bin/binary -"$1" $NUM_THREADS "$( ([[ "$1" != "N" ]] && [[ "$1" != "l" ]]) && ([[ "$IS_EVEN" = true ]] && echo "-$2 $NUM_THREADS" || echo "-$2 $((NUM_THREADS + 1))"))"
+        ./bin/binary -"$1" $NUM_THREADS "$( ([[ "$1" != "N" ]] && [[ "$1" != "l" ]] && [[ "$1" != "t" ]]) && ([[ "$IS_EVEN" = true ]] && echo "-$2 $NUM_THREADS" || echo "-$2 $((NUM_THREADS + 1))"))"
         # DURATION=$(echo "$(date +%s.%N) - $START" | bc -l)
         echo "$(date +%s.%N);$START," >>$FILENAME
 
