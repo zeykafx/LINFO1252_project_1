@@ -3,7 +3,6 @@ import csv
 import statistics
 
 import matplotlib.pyplot as plt
-import numpy as np
 from enum import Enum
 
 
@@ -11,6 +10,7 @@ class CurrentProblem(Enum):
     PHILOSOPHERS = "philosophers"
     READER_WRITER = "reader_writer"
     PRODUCER_CONSUMER = "producer_consumer"
+    TEST_AND_SET_LOCK = "test_and_set_lock"
 
 
 def plot_file(file, current_problem: str):
@@ -42,13 +42,13 @@ def plot_file(file, current_problem: str):
     plt.ylabel("Time taken in milliseconds for each run")
     plt.errorbar(threads, y, y_err, fmt=".", color="Black", elinewidth=2, capthick=10, errorevery=1, alpha=0.5, ms=4,
                     capsize=2)
-    plt.savefig(f'figure_{current_problem}.png', dpi=400, transparent=False)
+    plt.savefig(f'./data/figure_{current_problem}.png', dpi=400, transparent=False)
     plt.show()
 
 
 def main():
-    for i in [CurrentProblem.PHILOSOPHERS.value, CurrentProblem.PRODUCER_CONSUMER.value, CurrentProblem.READER_WRITER.value]:
-        with open(f"{i}.csv") as file:
+    for i in [CurrentProblem.PHILOSOPHERS.value, CurrentProblem.PRODUCER_CONSUMER.value, CurrentProblem.READER_WRITER.value, CurrentProblem.TEST_AND_SET_LOCK.value]:
+        with open(f"./data/{i}.csv") as file:
             plot_file(file, i)
 
 

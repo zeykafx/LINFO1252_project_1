@@ -9,14 +9,15 @@
 void lock(int *lock) {
     int value = 1;
     do {
-        asm volatile ("xchgl %0, %1" : : "a"(value), "m"(*lock)); // a means value goes into eax first, m means that lock is read from memory
+        asm volatile ("xchgl %0, %1" : "+a"(value), "+m"(*lock)); // "a" means value goes into eax first, "m" means that lock is read from memory
+        // the "+"" denotes a read and write constraint, found in: https://gcc.gnu.org/onlinedocs/gcc/Extended-Asm.html#Extended-Asm
     } while (value - (*lock) == 0); // loop while value isn't 1, meaning lock was 0, so another thread had the lock
 
 }
 
 void unlock(int *lock) {
     int value = 0;
-    asm("xchgl %0, %1" : : "a"(value), "m"(*lock));
+    asm("xchgl %0, %1" : "+a"(value), "+m"(*lock));
 }
 
 
@@ -79,6 +80,10 @@ void *thread_func(void *arg) {
     
     for (int i = 0; i < TEST_SET_THREADS_CYCLE/args->n_threads; ++i) {
         lock(args->lock);
+
+            if (args->verbose) {
+                printf("thread #%d got the lock and is working\n", args->id);
+            }
 
             // simulate busy work
             for (int _ = 0; _ < BUSY_WORK_CYCLES; _++) {}
