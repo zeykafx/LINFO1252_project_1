@@ -7,6 +7,7 @@ typedef struct options {
     int number_consumers;
     int number_readers;
     int number_writers;
+    int number_test_and_set_lock_threads;
 
     bool verbose;
 } options_t;

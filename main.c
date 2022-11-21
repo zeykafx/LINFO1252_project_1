@@ -4,6 +4,7 @@
 #include "./headers/producers_consumers.h"
 #include "./headers/readers_writers.h"
 #include "./headers/args.h"
+#include "headers/test_and_set_lock.h"
 
 int main(int argc, char *argv[]) {
     options_t options;
@@ -22,6 +23,8 @@ int main(int argc, char *argv[]) {
     if (options.number_readers > 0 && options.number_writers > 0) {
         reader_writer(options.number_readers, options.number_writers, options.verbose);
     }
+
+    test_and_set_lock(options.verbose, options.number_test_and_set_lock_threads);
 
     return EXIT_SUCCESS;
 }
