@@ -10,7 +10,7 @@
 int test_and_set(volatile int *lock) {
     int value = 1;
     asm volatile ("xchgl %0, %1" : "+m"(*lock), "+a"(value)); // "a" means value goes into eax first, "m" means that lock is read from memory
-    // the "+"" denotes a read and write constraint, found in: https://gcc.gnu.org/onlinedocs/gcc/Modifiers.html#Modifiers
+    // the "+" denotes a read and write constraint, found in: https://gcc.gnu.org/onlinedocs/gcc/Modifiers.html#Modifiers
     return value;
 }
 
@@ -50,7 +50,7 @@ void test_and_set_lock(bool verbose, int n_threads, int n_tatas_threads, bool is
     int number_of_threads = (is_simple_tas ? n_threads : n_tatas_threads);
 
     // allocate on the stack, will be freed automatically
-    pthread_t *threads = malloc(number_of_threads * sizeof(pthread_t));
+    pthread_t *threads = alloca(number_of_threads * sizeof(pthread_t));
 
 
     test_and_set_lock_threads_args_t **args_buffer = malloc(
@@ -94,7 +94,6 @@ void test_and_set_lock(bool verbose, int n_threads, int n_tatas_threads, bool is
     free(args_buffer);
 
     free((int *) lock);
-    free(threads);
 
     if (verbose) {
         printf("Finished running the %s lock test program\n", is_simple_tas ? "test_and_set" : "test_and_test_and_set");
