@@ -45,7 +45,7 @@ $(LIBDIR)/%.o: $(SRCDIR)/%.c
 
 # Clean, compile, and run binary
 run: clean all
-	./$(BINDIR)/binary -v -c 2 -p 2
+	./$(BINDIR)/binary -v -t 4
 
 # link and generate the binary file
 all: main.c $(OBJECTS)

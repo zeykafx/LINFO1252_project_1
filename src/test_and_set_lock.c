@@ -6,8 +6,35 @@
 #include "../headers/producers_consumers.h"
 #include <alloca.h>
 
+
+int test_and_set(volatile int *lock) {
+    int value = 1;
+    asm volatile ("xchgl %0, %1" : "+m"(*lock), "+a"(value)); // "a" means value goes into eax first, "m" means that lock is read from memory
+    // the "+"" denotes a read and write constraint, found in: https://gcc.gnu.org/onlinedocs/gcc/Modifiers.html#Modifiers
+    return value;
+}
+
+void lock(volatile int *lock) {
+    int val = 1;
+    do {
+        val = test_and_set(lock);
+    } while (val - (*lock) == 0); // loop while value isn't 1, meaning lock was 0, so another thread had the lock
+}
+
+void unlock(volatile int *lock) {
+    int value = 0;
+    asm volatile ("xchgl %0, %1" : "+a"(value), "+m"(*lock));
+}
+
+void lock_test_and_test_and_set(volatile int *lock) {
+    while (test_and_set(lock) != 0) {
+        while (*lock != 0) {}
+    }
+}
+
+
 void test_and_set_lock(bool verbose, int n_threads, int n_tatas_threads, bool is_simple_tas) {
-    int *lock = malloc(sizeof(int));
+    volatile int *lock = malloc(sizeof(int));
     if (lock == NULL) {
         perror("Failed to init lock variable");
         exit(EXIT_FAILURE);
@@ -22,15 +49,18 @@ void test_and_set_lock(bool verbose, int n_threads, int n_tatas_threads, bool is
 
     int number_of_threads = (is_simple_tas ? n_threads : n_tatas_threads);
 
-    pthread_t *threads = alloca(number_of_threads * sizeof(pthread_t)); // allocate on the stack, will be freed automatically
+    // allocate on the stack, will be freed automatically
+    pthread_t *threads = malloc(number_of_threads * sizeof(pthread_t));
 
-    test_and_set_lock_threads_args_t **args_buffer = malloc(number_of_threads * sizeof(test_and_set_lock_threads_args_t*));
-        if (args_buffer == NULL) {
+
+    test_and_set_lock_threads_args_t **args_buffer = malloc(
+            number_of_threads * sizeof(test_and_set_lock_threads_args_t *));
+    if (args_buffer == NULL) {
         perror("Failed to args buffer");
         exit(EXIT_FAILURE);
     }
 
-    for (int i = 0; i < number_of_threads;++i) {
+    for (int i = 0; i < number_of_threads; ++i) {
         args_buffer[i] = malloc(sizeof(test_and_set_lock_threads_args_t));
         if (args_buffer[i] == NULL) {
             perror("Failed to init args");
@@ -51,8 +81,8 @@ void test_and_set_lock(bool verbose, int n_threads, int n_tatas_threads, bool is
         }
     }
 
-    
-    for (int i = 0; i < number_of_threads;++i) {
+
+    for (int i = 0; i < number_of_threads; ++i) {
         int err = pthread_join(threads[i], NULL);
         if (err != 0) {
             perror("Failed to join threads");
@@ -63,7 +93,8 @@ void test_and_set_lock(bool verbose, int n_threads, int n_tatas_threads, bool is
     }
     free(args_buffer);
 
-    free(lock);
+    free((int *) lock);
+    free(threads);
 
     if (verbose) {
         printf("Finished running the %s lock test program\n", is_simple_tas ? "test_and_set" : "test_and_test_and_set");
@@ -72,16 +103,18 @@ void test_and_set_lock(bool verbose, int n_threads, int n_tatas_threads, bool is
 
 void *thread_func(void *arg) {
     test_and_set_lock_threads_args_t *args = (test_and_set_lock_threads_args_t *) arg;
-    
-    for (int i = 0; i < TEST_SET_THREADS_CYCLE/(args->is_simple_tas ? args->n_threads : args->n_tatas_threads); ++i) {
+
+    int n_threads = (args->is_simple_tas ? args->n_threads : args->n_tatas_threads);
+
+    for (int i = 0; i < (TEST_SET_THREADS_CYCLE / n_threads); ++i) {
         if (args->is_simple_tas) {
             lock(args->lock);
         } else {
             lock_test_and_test_and_set(args->lock);
         }
 
-            // simulate busy work
-            for (int _ = 0; _ < BUSY_WORK_CYCLES; _++) {}
+        // simulate busy work
+        for (int _ = 0; _ < BUSY_WORK_CYCLES; _++) {}
 
         unlock(args->lock);
     }
@@ -91,30 +124,4 @@ void *thread_func(void *arg) {
     }
 
     pthread_exit(NULL);
-}
-
-
-int test_and_set(int *lock) {
-    int value = 1;
-    asm volatile ("xchgl %0, %1" : "+a"(value), "+m"(*lock)); // "a" means value goes into eax first, "m" means that lock is read from memory
-    // the "+"" denotes a read and write constraint, found in: https://gcc.gnu.org/onlinedocs/gcc/Modifiers.html#Modifiers
-    return value;
-}
-
-void lock(int *lock) {
-    int val = 1;
-    do {
-        val = test_and_set(lock);
-    } while (val - (*lock) == 0); // loop while value isn't 1, meaning lock was 0, so another thread had the lock
-}
-
-void unlock(int *lock) {
-    int value = 0;
-    asm volatile ("xchgl %0, %1" : "+a"(value), "+m"(*lock));
-}
-
-void lock_test_and_test_and_set(int *lock) {
-    do {
-        while (*lock == 1) {}
-    } while (test_and_set(lock) == 1);
 }
