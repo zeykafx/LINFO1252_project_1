@@ -67,9 +67,13 @@ def plot_file(file, current_problem: str):
                      capsize=2)
 
     name = current_problem.replace("_", " ")
+    if current_problem == CurrentProblem.TEST_AND_SET_LOCK.value:
+        name = current_problem.replace("_", " ") + " & test and test and and set"
+
     plt.title(f"{name} problem: time taken for N threads, avg of 5 runs")
+
     plt.xlabel("Number of threads per run")
-    plt.ylabel("Time taken in milliseconds for each run")
+    plt.ylabel("Time taken in seconds for each run")
 
     plt.savefig(f'./data/figure_{current_problem}.png', dpi=400, transparent=False)
     # plt.show()

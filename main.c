@@ -5,6 +5,7 @@
 #include "./headers/readers_writers.h"
 #include "./headers/args.h"
 #include "headers/test_and_set_lock.h"
+#include "./headers/my_semaphore.h"
 
 int main(int argc, char *argv[]) {
     options_t options;
@@ -23,10 +24,12 @@ int main(int argc, char *argv[]) {
     if (options.number_readers > 0 && options.number_writers > 0) {
         reader_writer(options.number_readers, options.number_writers, options.verbose);
     }
-
     if (options.number_test_and_set_lock_threads > 0 || options.number_test_and_test_and_set_threads > 0) {
         bool is_simple_test_and_set = options.number_test_and_set_lock_threads > 0;
         test_and_set_lock(options.verbose, options.number_test_and_set_lock_threads, options.number_test_and_test_and_set_threads, is_simple_test_and_set);
+    }
+    if (options.number_sem_test_threads > 0) {
+        test_semaphore(options.number_sem_test_threads, options.verbose);
     }
 
     return EXIT_SUCCESS;

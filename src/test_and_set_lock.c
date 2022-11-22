@@ -7,40 +7,66 @@
 #include <alloca.h>
 
 
-int test_and_set(volatile int *lock) {
+// test-and-set & test-and-test-and set lock implementation: ----------------------
+
+mutex_t *mutex_init(void) {
+    mutex_t *mutex = malloc(sizeof(mutex_t));
+    if (mutex == NULL) {
+        perror("Failed to init mutex struct");
+        exit(EXIT_FAILURE);
+    }
+    mutex->lock = malloc(sizeof(int));
+    if (mutex->lock == NULL) {
+        perror("Failed to init lock variable");
+        exit(EXIT_FAILURE);
+    }
+    *mutex->lock = 0;
+    return mutex;
+}
+
+void mutex_destroy(mutex_t *mutex) {
+    free((int *) mutex->lock);
+    free(mutex);
+}
+
+int test_and_set(mutex_t *mutex) {
     int value = 1;
-    asm volatile ("xchgl %0, %1" : "+m"(*lock), "+a"(value)); // "a" means value goes into eax first, "m" means that lock is read from memory
+    // the "lock" is just there to make sure that it will indeed be an atomic operation
+    asm volatile ("lock; xchgl %0, %1" : "+m"(*mutex->lock), "+a"(value)); // "a" means value goes into eax first, "m" means that lock is read from memory
     // the "+" denotes a read and write constraint, found in: https://gcc.gnu.org/onlinedocs/gcc/Modifiers.html#Modifiers
     return value;
 }
 
-void lock(volatile int *lock) {
-    int val = 1;
-    do {
-        val = test_and_set(lock);
-    } while (val - (*lock) == 0); // loop while value isn't 1, meaning lock was 0, so another thread had the lock
+void lock(mutex_t *mutex) {
+//    int val = 1;
+//    do {
+//        val = test_and_set(mutex);
+//    } while (val - (*mutex->lock) == 0); // loop while value isn't 1, meaning lock was 0, so another thread had the lock
+
+    // spin until test_and_set returns 1, meaning we got the lock
+    while (test_and_set(mutex) != 0) {
+       //asm("nop");
+    }
+
 }
 
-void unlock(volatile int *lock) {
+void unlock(mutex_t *mutex) {
     int value = 0;
-    asm volatile ("xchgl %0, %1" : "+a"(value), "+m"(*lock));
+    asm volatile ("lock; xchgl %0, %1" : "+a"(value), "+m"(*mutex->lock)); // sets the lock variable back to 0
 }
 
-void lock_test_and_test_and_set(volatile int *lock) {
-    while (test_and_set(lock) != 0) {
-        while (*lock != 0) {}
+void lock_test_and_test_and_set(mutex_t *mutex) {
+    while (test_and_set(mutex) != 0) {
+        while (*mutex->lock != 0) {}
     }
 }
+
+
+// test program: ----------------------
 
 
 void test_and_set_lock(bool verbose, int n_threads, int n_tatas_threads, bool is_simple_tas) {
-    volatile int *lock = malloc(sizeof(int));
-    if (lock == NULL) {
-        perror("Failed to init lock variable");
-        exit(EXIT_FAILURE);
-    }
-
-    *lock = 0;
+    mutex_t *mutex = mutex_init();
 
     if (n_threads > 0 && n_tatas_threads > 0) {
         fprintf(stderr, "Cannot run test_and_set at the same time as test_and_test_and_set, will run test_and_set\n");
@@ -56,7 +82,7 @@ void test_and_set_lock(bool verbose, int n_threads, int n_tatas_threads, bool is
     test_and_set_lock_threads_args_t **args_buffer = malloc(
             number_of_threads * sizeof(test_and_set_lock_threads_args_t *));
     if (args_buffer == NULL) {
-        perror("Failed to args buffer");
+        perror("Failed to malloc args buffer");
         exit(EXIT_FAILURE);
     }
 
@@ -68,7 +94,7 @@ void test_and_set_lock(bool verbose, int n_threads, int n_tatas_threads, bool is
         }
 
         args_buffer[i]->id = i;
-        args_buffer[i]->lock = lock;
+        args_buffer[i]->mutex = mutex;
         args_buffer[i]->n_threads = n_threads;
         args_buffer[i]->verbose = verbose;
         args_buffer[i]->n_tatas_threads = n_tatas_threads;
@@ -93,7 +119,7 @@ void test_and_set_lock(bool verbose, int n_threads, int n_tatas_threads, bool is
     }
     free(args_buffer);
 
-    free((int *) lock);
+    mutex_destroy(mutex);
 
     if (verbose) {
         printf("Finished running the %s lock test program\n", is_simple_tas ? "test_and_set" : "test_and_test_and_set");
@@ -107,15 +133,15 @@ void *thread_func(void *arg) {
 
     for (int i = 0; i < (TEST_SET_THREADS_CYCLE / n_threads); ++i) {
         if (args->is_simple_tas) {
-            lock(args->lock);
+            lock(args->mutex);
         } else {
-            lock_test_and_test_and_set(args->lock);
+            lock_test_and_test_and_set(args->mutex);
         }
 
         // simulate busy work
         for (int _ = 0; _ < BUSY_WORK_CYCLES; _++) {}
 
-        unlock(args->lock);
+        unlock(args->mutex);
     }
 
     if (args->verbose) {

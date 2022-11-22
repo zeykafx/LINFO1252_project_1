@@ -20,6 +20,8 @@ static void set_default_options(options_t *options) {
     options->number_test_and_set_lock_threads = 0;
     options->number_test_and_test_and_set_threads = 0;
 
+    options->number_sem_test_threads = 0;
+
     options->verbose = false;
 }
 
@@ -34,6 +36,7 @@ static void usage(void) {
     fprintf(stderr, "    -r number of writers (default: 0): set the number of writer threads\n");
     fprintf(stderr, "    -l number of threads for the test_and_set lock (default: 0)\n");
     fprintf(stderr, "    -t number of threads for the test_and_test_and_set lock (default: 0)\n");
+    fprintf(stderr, "    -s number of threads for the semaphore test program (default: 0)\n");
 }
 
 
@@ -46,7 +49,7 @@ int options_parser(int argc, char *argv[], options_t *options) {
     set_default_options(options);
 
     int opt;
-    while ((opt = getopt(argc, argv, "N:p:c:w:r:l:t:v")) != -1) {
+    while ((opt = getopt(argc, argv, "N:p:c:w:r:l:t:s:v")) != -1) {
         switch (opt) {
             case 'N':
                 options->number_philosophers = atoi(optarg);
@@ -94,6 +97,13 @@ int options_parser(int argc, char *argv[], options_t *options) {
                 options->number_test_and_test_and_set_threads = atoi(optarg);
                 if (options->number_test_and_test_and_set_threads == 0) {
                     fprintf(stderr, "The number of threads for the test_and_test_and_set lock must be greater than 0, got: %s\n", optarg);
+                    return -1;
+                }
+                break;
+            case 's':
+                options->number_sem_test_threads = atoi(optarg);
+                if (options->number_sem_test_threads == 0) {
+                    fprintf(stderr, "The number of threads for the semaphore test program lock must be greater than 0, got: %s\n", optarg);
                     return -1;
                 }
                 break;

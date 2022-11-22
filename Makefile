@@ -8,7 +8,6 @@ LOGDIR := log
 LIBDIR := lib
 TESTDIR := test
 
-
 CC := gcc
 
 STD := -std=gnu99
@@ -45,7 +44,7 @@ $(LIBDIR)/%.o: $(SRCDIR)/%.c
 
 # Clean, compile, and run binary
 run: clean all
-	./$(BINDIR)/binary -v -t 4
+	./$(BINDIR)/binary -s 8
 
 # link and generate the binary file
 all: main.c $(OBJECTS)
@@ -74,5 +73,5 @@ valgrind: clean all
 		--show-leak-kinds=all \
 		--leak-resolution=high \
 		--log-file=$(LOGDIR)/$@.log \
-		$(BINDIR)/binary -l 4
+		$(BINDIR)/binary -s 8
 	@echo "\nCheck the log file: $(LOGDIR)/$@.log\n"
