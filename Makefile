@@ -73,5 +73,5 @@ valgrind: clean all
 		--show-leak-kinds=all \
 		--leak-resolution=high \
 		--log-file=$(LOGDIR)/$@.log \
-		$(BINDIR)/binary -p 1 -c 2
+		$(BINDIR)/binary -o -N 4
 	@echo "\nCheck the log file: $(LOGDIR)/$@.log\n"

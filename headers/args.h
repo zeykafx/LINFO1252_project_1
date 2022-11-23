@@ -11,6 +11,7 @@ typedef struct options {
     int number_test_and_test_and_set_threads;
     int number_sem_test_threads;
 
+    bool running_problems_with_pthread_sync;
     bool verbose;
 } options_t;
 

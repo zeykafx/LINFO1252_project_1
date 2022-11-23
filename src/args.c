@@ -22,13 +22,15 @@ static void set_default_options(options_t *options) {
 
     options->number_sem_test_threads = 0;
 
+    options->running_problems_with_pthread_sync = false;
     options->verbose = false;
 }
 
 static void usage(void) {
     fprintf(stderr, "USAGE:\n");
     fprintf(stderr, "    [OPTIONS - You must set the number of threads for at least one option]\n");
-    fprintf(stderr, "    -v verbose: shows additionnal information\n");
+    fprintf(stderr, "    -v verbose: shows additional information\n");
+    fprintf(stderr, "    -o using pthread sync: if on, the problems will be using pthread mutexes, and if off, it will be using our own mutex and semaphores\n");
     fprintf(stderr, "    -N number of philosophers (default: 0): set the number of philosophers (threads) that will run concurrently\n");
     fprintf(stderr, "    -c number of consumers (default: 0): set the number of consumer threads\n");
     fprintf(stderr, "    -p number of producers (default: 0): set the number of producer threads\n");
@@ -49,7 +51,7 @@ int options_parser(int argc, char *argv[], options_t *options) {
     set_default_options(options);
 
     int opt;
-    while ((opt = getopt(argc, argv, "N:p:c:w:r:l:t:s:v")) != -1) {
+    while ((opt = getopt(argc, argv, "N:p:c:w:r:l:t:s:vo")) != -1) {
         switch (opt) {
             case 'N':
                 options->number_philosophers = atoi(optarg);
@@ -112,6 +114,9 @@ int options_parser(int argc, char *argv[], options_t *options) {
                 exit(EXIT_FAILURE);
             case 'v':
                 options->verbose = true;
+                break;
+            case 'o':
+                options->running_problems_with_pthread_sync = true;
                 break;
             case ':':
                 printf("Missing arg for %c\n", optopt);

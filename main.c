@@ -16,13 +16,13 @@ int main(int argc, char *argv[]) {
     }
 
     if (options.number_philosophers > 0) {
-        philosophers(options.number_philosophers, options.verbose);
+        philosophers(options.number_philosophers, options.verbose, options.running_problems_with_pthread_sync);
     }
     if (options.number_producers > 0 && options.number_consumers > 0) {
-        producer_consumer(options.number_producers, options.number_consumers, options.verbose);
+        producer_consumer(options.number_producers, options.number_consumers, options.verbose, options.running_problems_with_pthread_sync);
     }
     if (options.number_readers > 0 && options.number_writers > 0) {
-        reader_writer(options.number_readers, options.number_writers, options.verbose);
+        reader_writer(options.number_readers, options.number_writers, options.verbose, options.running_problems_with_pthread_sync);
     }
     if (options.number_test_and_set_lock_threads > 0 || options.number_test_and_test_and_set_threads > 0) {
         bool is_simple_test_and_set = options.number_test_and_set_lock_threads > 0;
