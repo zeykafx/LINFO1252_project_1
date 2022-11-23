@@ -155,7 +155,7 @@ void *producer(void *args) {
 
                 // search for the first free index where we can place our produced integer
                 // (which is just the thread id)
-                for (int j = 0; j < BUFFER_SIZE; j++) {
+                for (int j = 0; j < BUFFER_SIZE && produced_elements < CYCLES; j++) {
                     if (consumed_buffer[j] == 0) {
                         buffer[j] = arguments->id; // produce an integer
                         produced_elements++;
@@ -208,7 +208,7 @@ void *consumer(void *args) {
 
                 // looping over consumed_buffer until an element is 1, meaning the element at the
                 // same index in buffer is ready to be consumed
-                for (int j = 0; j < BUFFER_SIZE; j++) {
+                for (int j = 0; j < BUFFER_SIZE && consumed_elements < CYCLES; j++) {
                     if (consumed_buffer[j] == 1) {
 
                         // we have nothing to do with the produced element, so we kinda just ignore it,
