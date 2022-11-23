@@ -22,7 +22,7 @@ volatile int produced_elements = 0;
 volatile int consumed_elements = 0;
 
 void producer_consumer(int n_prods, int n_cons, bool verbose, bool using_pthread_sync) {
-    if (using_pthread_sync) {
+    if (using_pthread_sync && verbose) {
         printf("Running the producer consumer problem using pthread sync\n");
     }
 
@@ -32,6 +32,7 @@ void producer_consumer(int n_prods, int n_cons, bool verbose, bool using_pthread
 
     semaphore_init(&empty, BUFFER_SIZE);
     semaphore_init(&full, 0);
+
     int error = pthread_mutex_init(&pthread_mutex, NULL);
     if (error != 0) {
         perror("Failed to init prod cons mutex");
@@ -73,6 +74,7 @@ void producer_consumer(int n_prods, int n_cons, bool verbose, bool using_pthread
 
         prod_args[i]->id = i;
         prod_args[i]->verbose = verbose;
+        prod_args[i]->using_pthread_sync = using_pthread_sync;
 
         pthread_create(&prods[i], NULL, producer, (void *) prod_args[i]);
     }
@@ -93,6 +95,7 @@ void producer_consumer(int n_prods, int n_cons, bool verbose, bool using_pthread
 
         cons_args[i]->id = i;
         cons_args[i]->verbose = verbose;
+        cons_args[i]->using_pthread_sync = using_pthread_sync;
 
         pthread_create(&cons[i], NULL, consumer, (void *) cons_args[i]);
     }
@@ -132,14 +135,15 @@ void producer_consumer(int n_prods, int n_cons, bool verbose, bool using_pthread
     free(buffer);
 
     mutex_destroy(mutex);
+
+    semaphore_destroy(&empty);
+    semaphore_destroy(&full);
+
     int err = pthread_mutex_destroy(&pthread_mutex);
     if (err != 0) {
         perror("Failed to destroy prod cons mutex");
         exit(EXIT_FAILURE);
     }
-
-    semaphore_destroy(&empty);
-    semaphore_destroy(&full);
 
     sem_destroy(&pthread_empty);
     sem_destroy(&pthread_full);

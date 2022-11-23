@@ -11,10 +11,10 @@ import numpy as np
 class CurrentProblem(Enum):
     PHILOSOPHERS = "philosophers"
     PHILOSOPHERS_OLD = "old_philosophers"
-    READER_WRITER = "reader_writer"
-    READER_WRITER_OLD = "old_reader_writer"
     PRODUCER_CONSUMER = "producer_consumer"
     PRODUCER_CONSUMER_OLD = "old_producer_consumer"
+    READER_WRITER = "reader_writer"
+    READER_WRITER_OLD = "old_reader_writer"
     TEST_AND_SET_LOCK = "test_and_set_lock"
     TEST_AND_TEST_AND_SET_LOCK = "test_and_test_and_set_lock"
 
@@ -32,7 +32,7 @@ def plot_file(file, current_problems: (str, str)):
     old_problem_y_err = []
 
     for row in reader:
-        threads.append(row[0])
+        threads.append(int(row[0]))
         float_row = []
         for i in row[1:]:
             time_list = i.split(";")
@@ -57,16 +57,14 @@ def plot_file(file, current_problems: (str, str)):
 
     width = 10
     height = 8
-
-    X_axis = np.arange(len(threads)) + 0.2
-
+    X_axis = np.arange(threads[0], threads[-1]+1, 1) + 0.2
     plt.figure(figsize=(width, height))
 
     plt.bar(X_axis, y, 0.4, label=new_problem)
     plt.errorbar(X_axis, y, y_err, fmt=".", color="Black", elinewidth=2, capthick=10, errorevery=1, alpha=0.5, ms=4,
                  capsize=2)
 
-    plt.bar(X_axis - 0.4, old_problem_y, 0.4, label=old_problem.replace("old_", "") + " with pthread sync")
+    plt.bar(X_axis - 0.4, old_problem_y, 0.4, label=old_problem.replace("old_", "") + " with pthread sync" if new_problem != CurrentProblem.TEST_AND_SET_LOCK.value else old_problem.replace("old_", ""))
     plt.errorbar(X_axis - 0.4, old_problem_y, old_problem_y_err, fmt=".", color="Black", elinewidth=2, capthick=10, errorevery=1,
                  alpha=0.5, ms=4,
                  capsize=2)

@@ -10,7 +10,6 @@ rm "$DATA_FOLDER/reader_writer.csv"
 rm "$DATA_FOLDER/producer_consumer.csv"
 rm "$DATA_FOLDER/test_and_set_lock.csv"
 rm "$DATA_FOLDER/test_and_test_and_set_lock.csv"
-# FILENAME=./philosophers.csv
 
 CORE_COUNT=$(grep ^cpu\\scores /proc/cpuinfo | uniq | awk '{print $4}')
 MAX_THREADS=$((2 * "$CORE_COUNT"))
@@ -32,7 +31,7 @@ for pgm in N l t p,c w,r; do
     IS_EVEN=true
 
     # If this is P, it means we'll run the philosophers program, so we dont need to divide the number of threads.
-    if [ "$1" = "N" ]; then
+    if [ "$1" = "N" ] || [[ "$1" = "l" ]] || [[ "$1" = "t" ]]; then
       NUM_THREADS=$t
       if [ "$NUM_THREADS" -lt 2 ]; then
         continue
@@ -62,7 +61,6 @@ for pgm in N l t p,c w,r; do
         # -> The second arg is always the consumer/reader (because of the outer for loop)
         START="$(date +%s.%N)"
         ./bin/binary -"$1" $NUM_THREADS "$( ([[ "$1" != "N" ]] && [[ "$1" != "l" ]] && [[ "$1" != "t" ]]) && ([[ "$IS_EVEN" = true ]] && echo "-$2 $NUM_THREADS" || echo "-$2 $((NUM_THREADS + 1))"))"
-        # DURATION=$(echo "$(date +%s.%N) - $START" | bc -l)
         echo "$(date +%s.%N);$START," >>$FILENAME
 
         truncate -s -1 $FILENAME # removes the \n added by time

@@ -27,37 +27,38 @@ void semaphore_wait(semaphore_t *semaphore) {
 
     lock_test_and_test_and_set(semaphore->mutex);
 
-    if (semaphore->counter > 0) {
-        (semaphore->counter)--;
-    } else {
-        // the calling thread is blocked while counter is 0
-        while (semaphore->counter == 0) {}
+    // the calling thread is blocked while counter is 0
+    while (semaphore->counter < 1) {}
 
-        (semaphore->counter)--;
-    }
-
+//    (semaphore->counter)--;
+    uint res;
+    asm volatile ("lock; xadd %0, %1"
+            : "=r"(res), "+m"(semaphore->counter)
+            : "0"(-1)
+            : "memory"
+            );
 
     unlock(semaphore->mutex);
 }
 
 // increments the semaphore value, unblocks any thread waiting for the counter to go up.
 void semaphore_post(semaphore_t *semaphore) {
-    (semaphore->counter)++;
+//    (semaphore->counter)++;
 
     // we can also increment counter using xadd which is the atomic addition
-//    uint res;
-//    asm volatile ("lock; xadd %0, %1"
-//            : "=r"(res), "+m"(semaphore->counter)
-//            : "0"(1)
-//            : "memory"
-//            );
+    uint res;
+    asm volatile ("lock; xadd %0, %1"
+            : "=r"(res), "+m"(semaphore->counter)
+            : "0"(1)
+            : "memory"
+            );
 //    return res;
 }
 
 
 // test program: ----------------------------
-// small program used to test if the semaphores above work correctly, they are used to guarantee mutual exclusion,
-// sort of like a binary semaphore
+// small program used to test if the semaphores above work correctly, in this example they are used to guarantee mutual exclusion,
+// sort of like a mutex
 
 void test_semaphore(int n_threads, bool verbose) {
     pthread_t threads[n_threads];
@@ -116,11 +117,10 @@ void *test_semaphore_thread_func(void *arg) {
 
     for (int i = 0; i < 10000; ++i) {
         semaphore_wait(args->semaphore);
-        if (args->verbose) {
-            printf("Thread #%d got past the sem and is incrementing counter\n", args->id);
-        }
-        (*args->counter)++;
-//        *args->counter = *args->counter + 1;
+            if (args->verbose) {
+                printf("Thread #%d got past the sem and is incrementing counter\n", args->id);
+            }
+            (*args->counter)++;
         semaphore_post(args->semaphore);
     }
     pthread_exit(NULL);

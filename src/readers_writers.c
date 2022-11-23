@@ -24,7 +24,7 @@ mutex_t *mutex;
 volatile int readcount, writecount = 0; // nombre de readers et de writers actif
 
 void reader_writer(int n_reader, int n_writer, bool verbose, bool using_pthread_sync) {
-    if (using_pthread_sync) {
+    if (using_pthread_sync && verbose) {
         printf("Running the readers writers problem using pthread sync\n");
     }
 

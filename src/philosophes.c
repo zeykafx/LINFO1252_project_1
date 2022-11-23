@@ -10,7 +10,7 @@ void philosophers(int n_philosophers, bool verbose, bool using_pthread_sync) {
         exit(EXIT_FAILURE);
     }
 
-    if (using_pthread_sync) {
+    if (using_pthread_sync && verbose) {
         printf("Running the philosophers problem using pthread sync\n");
     }
 
