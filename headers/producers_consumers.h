@@ -1,4 +1,5 @@
 #pragma once
+
 #include <stdbool.h>
 
 #define BUFFER_SIZE 8

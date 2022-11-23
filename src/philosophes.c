@@ -16,15 +16,15 @@ void philosophers(int n_philosophers, bool verbose, bool using_pthread_sync) {
 
     pthread_t phil[n_philosophers];
 
-        // array of pthread mutexes
-        pthread_mutex_t *pthread_baguette = malloc(sizeof(pthread_mutex_t) * n_philosophers);
-        if (pthread_baguette == NULL) {
-            perror("Failed to mutex buffer for philosophers");
-            exit(EXIT_FAILURE);
-        }
+    // array of pthread mutexes
+    pthread_mutex_t *pthread_baguette = malloc(sizeof(pthread_mutex_t) * n_philosophers);
+    if (pthread_baguette == NULL) {
+        perror("Failed to mutex buffer for philosophers");
+        exit(EXIT_FAILURE);
+    }
 
-        // own mutex array
-        mutex_t *baguette[n_philosophers];
+    // own mutex
+    mutex_t *baguette[n_philosophers];
 
 
     // for each philosopher, we create a mutex, a thread, and we start the thread
@@ -36,7 +36,7 @@ void philosophers(int n_philosophers, bool verbose, bool using_pthread_sync) {
         }
         baguette[i] = mutex_init();
     }
-    
+
     philosophers_args_t **args_buffer = malloc(n_philosophers * sizeof(philosophers_args_t *));
     if (args_buffer == NULL) {
         perror("Failed to init args buffer for philosophers");

@@ -45,7 +45,7 @@ void lock(mutex_t *mutex) {
 
     // spin until test_and_set returns 1, meaning we got the lock
     while (test_and_set(mutex) != 0) {
-       //asm("nop");
+        //asm("nop");
     }
 
 }

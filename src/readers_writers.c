@@ -5,16 +5,15 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "../headers/my_semaphore.h"
-#include "../headers/test_and_set_lock.h"
 
-
+// pthread mutex and semaphore, used when the -o is passed as argument to the program
 pthread_mutex_t pthread_mutex_readcount, pthread_mutex_writercount;
 pthread_mutex_t pthread_readtry;
 sem_t pthread_rsem, pthread_wsem;
-
 sem_t pthread_db;
 pthread_mutex_t pthread_mutex;
 
+// our mutex and semaphore, used by default
 mutex_t *mutex_readcount, *mutex_writercount;
 mutex_t *readtry;
 semaphore_t rsem, wsem;
@@ -28,7 +27,6 @@ void reader_writer(int n_reader, int n_writer, bool verbose, bool using_pthread_
     if (using_pthread_sync) {
         printf("Running the readers writers problem using pthread sync\n");
     }
-
 
     pthread_t readers[n_reader], writers[n_writer];
 
@@ -183,9 +181,9 @@ void reader_writer(int n_reader, int n_writer, bool verbose, bool using_pthread_
 
 
 void *reader(void *args) {
-    reader_writer_args_t *arguments = (reader_writer_args_t *)args;
+    reader_writer_args_t *arguments = (reader_writer_args_t *) args;
 
-    for (int i = 0; i < WRITER_CYCLES/arguments->number_of_threads; ++i) {
+    for (int i = 0; i < WRITER_CYCLES / arguments->number_of_threads; ++i) {
         if (arguments->using_pthread_sync) {
             pthread_mutex_lock(&pthread_readtry);
             sem_wait(&pthread_rsem);
@@ -263,9 +261,9 @@ void *reader(void *args) {
 
 
 void *writer(void *args) {
-    reader_writer_args_t *arguments = (reader_writer_args_t *)args;
+    reader_writer_args_t *arguments = (reader_writer_args_t *) args;
 
-    for (int i = 0; i < READER_CYCLES/arguments->number_of_threads; ++i) {
+    for (int i = 0; i < READER_CYCLES / arguments->number_of_threads; ++i) {
 
         if (arguments->verbose) {
             printf("Writer #%d is preparing data\n", arguments->id);
@@ -318,6 +316,7 @@ void *writer(void *args) {
         } else {
             lock_test_and_test_and_set(mutex_writercount);
         }
+            // section critique
             writecount--;
             if (writecount == 0) {
                 if (arguments->verbose) {

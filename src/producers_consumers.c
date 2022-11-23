@@ -7,17 +7,19 @@
 #include "../headers/my_semaphore.h"
 #include <semaphore.h>
 
+
+// pthread mutex and semaphore
 pthread_mutex_t pthread_mutex;
 sem_t pthread_empty;
 sem_t pthread_full;
 
+// our mutex and semaphores
 mutex_t *mutex;
 semaphore_t empty;
 semaphore_t full;
 
 volatile int produced_elements = 0;
 volatile int consumed_elements = 0;
-
 
 void producer_consumer(int n_prods, int n_cons, bool verbose, bool using_pthread_sync) {
     if (using_pthread_sync) {
@@ -163,7 +165,7 @@ void *producer(void *args) {
                 semaphore_wait(&empty);
                 lock_test_and_test_and_set(mutex);
             }
-            // section critique
+                // section critique
 
                 // search for the first free index where we can place our produced integer
                 // (which is just the thread id)
@@ -226,8 +228,7 @@ void *consumer(void *args) {
                 semaphore_wait(&full);
                 lock_test_and_test_and_set(mutex);
             }
-
-            // section critique
+                // section critique
 
                 // looping over consumed_buffer until an element is 1, meaning the element at the
                 // same index in buffer is ready to be consumed

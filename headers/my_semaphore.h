@@ -1,4 +1,5 @@
 #pragma once
+
 #include <pthread.h>
 #include "../headers/test_and_set_lock.h"
 #include <stdbool.h>

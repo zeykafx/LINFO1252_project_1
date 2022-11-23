@@ -53,12 +53,15 @@ void semaphore_post(semaphore_t *semaphore) {
 //    return res;
 }
 
+
 // test program: ----------------------------
+// small program used to test if the semaphores above work correctly, they are used to guarantee mutual exclusion,
+// sort of like a binary semaphore
 
 void test_semaphore(int n_threads, bool verbose) {
     pthread_t threads[n_threads];
 
-    test_semaphore_threads_arguments_t **threads_args = malloc(n_threads * sizeof(test_semaphore_threads_arguments_t*));
+    test_semaphore_threads_arguments_t **threads_args = malloc(n_threads * sizeof(test_semaphore_threads_arguments_t *));
     if (threads_args == NULL) {
         perror("Failed to malloc args buffer");
         exit(EXIT_FAILURE);
