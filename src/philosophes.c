@@ -11,19 +11,21 @@ void philosophers(int n_philosophers, bool verbose) {
     }
 
     pthread_t phil[n_philosophers];
-    pthread_mutex_t *baguette = malloc(sizeof(pthread_mutex_t) * n_philosophers);
-    if (baguette == NULL) {
-        perror("Failed to mutex buffer for philosophers");
-        exit(EXIT_FAILURE);
-    }
+//    pthread_mutex_t *baguette = malloc(sizeof(pthread_mutex_t) * n_philosophers);
+    mutex_t *baguette[n_philosophers];
+//    if (baguette == NULL) {
+//        perror("Failed to mutex buffer for philosophers");
+//        exit(EXIT_FAILURE);
+//    }
 
     // for each philosopher, we create a mutex, a thread, and we start the thread
     for (int i = 0; i < n_philosophers; ++i) {
-        int err = pthread_mutex_init(&baguette[i], NULL);
-        if (err != 0) {
-            perror("Failed to init philosophers mutex");
-            exit(EXIT_FAILURE);
-        }
+//        int err = pthread_mutex_init(&baguette[i], NULL);
+//        if (err != 0) {
+//            perror("Failed to init philosophers mutex");
+//            exit(EXIT_FAILURE);
+//        }
+        baguette[i] = mutex_init();
     }
     
     philosophers_args_t **args_buffer = malloc(n_philosophers * sizeof(philosophers_args_t *));
@@ -59,15 +61,16 @@ void philosophers(int n_philosophers, bool verbose) {
 
     // clean up
     for (int i = 0; i < n_philosophers; ++i) {
-        int err = pthread_mutex_destroy(&baguette[i]);
-        if (err != 0) {
-            perror("Failed to destroy philosophers mutex");
-            exit(EXIT_FAILURE);
-        }
+//        int err = pthread_mutex_destroy(&baguette[i]);
+//        if (err != 0) {
+//            perror("Failed to destroy philosophers mutex");
+//            exit(EXIT_FAILURE);
+//        }
+        mutex_destroy(baguette[i]);
         free(args_buffer[i]);
     }
     free(args_buffer);
-    free(baguette);
+//    free(baguette);
 
     if (verbose) {
         printf("Finished running the Philosophers problem\n");
@@ -92,11 +95,15 @@ void *philosopher(void *arg) {
         }
 
         if (left < right) {
-            pthread_mutex_lock(&args->baguette[left]);
-            pthread_mutex_lock(&args->baguette[right]);
+            lock_test_and_test_and_set(args->baguette[left]);
+            lock_test_and_test_and_set(args->baguette[right]);
+//            pthread_mutex_lock(&args->baguette[left]);
+//            pthread_mutex_lock(&args->baguette[right]);
         } else {
-            pthread_mutex_lock(&args->baguette[right]);
-            pthread_mutex_lock(&args->baguette[left]);
+            lock_test_and_test_and_set(args->baguette[right]);
+            lock_test_and_test_and_set(args->baguette[left]);
+//            pthread_mutex_lock(&args->baguette[right]);
+//            pthread_mutex_lock(&args->baguette[left]);
         }
 
         // eating ...
@@ -104,8 +111,10 @@ void *philosopher(void *arg) {
             printf("philosopher %d is eating\n", args->id);
         }
 
-        pthread_mutex_unlock(&args->baguette[left]);
-        pthread_mutex_unlock(&args->baguette[right]);
+        unlock(args->baguette[left]);
+        unlock(args->baguette[right]);
+//        pthread_mutex_unlock(&args->baguette[left]);
+//        pthread_mutex_unlock(&args->baguette[right]);
     }
 
     pthread_exit(NULL);

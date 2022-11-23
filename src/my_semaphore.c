@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdatomic.h>
 #include "../headers/my_semaphore.h"
 
 // semaphore implementation: ----------------------------
@@ -28,10 +27,14 @@ void semaphore_wait(semaphore_t *semaphore) {
 
     lock_test_and_test_and_set(semaphore->mutex);
 
-    // the calling thread is blocked while counter is 0
-    while (semaphore->counter == 0) {}
+    if (semaphore->counter > 0) {
+        (semaphore->counter)--;
+    } else {
+        // the calling thread is blocked while counter is 0
+        while (semaphore->counter == 0) {}
+    }
 
-    (semaphore->counter)--;
+//    (semaphore->counter)--;
 
     unlock(semaphore->mutex);
 }
@@ -47,7 +50,7 @@ void semaphore_post(semaphore_t *semaphore) {
 //            : "0"(1)
 //            : "memory"
 //            );
-//    printf("res: %d\n", res);
+//    return res;
 }
 
 // test program: ----------------------------
@@ -72,7 +75,6 @@ void test_semaphore(int n_threads, bool verbose) {
     for (int i = 0; i < n_threads; ++i) {
 
         threads_args[i] = malloc(sizeof(test_semaphore_threads_arguments_t));
-
 
         threads_args[i]->counter = counter;
         threads_args[i]->semaphore = &semaphore;
