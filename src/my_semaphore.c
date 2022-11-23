@@ -32,9 +32,10 @@ void semaphore_wait(semaphore_t *semaphore) {
     } else {
         // the calling thread is blocked while counter is 0
         while (semaphore->counter == 0) {}
+
+        (semaphore->counter)--;
     }
 
-//    (semaphore->counter)--;
 
     unlock(semaphore->mutex);
 }
@@ -66,10 +67,9 @@ void test_semaphore(int n_threads, bool verbose) {
         perror("Failed to malloc args buffer");
         exit(EXIT_FAILURE);
     }
-    int *counter = malloc(sizeof(int));
+    volatile int *counter = malloc(sizeof(int));
 
     *counter = 0;
-
 
     semaphore_t semaphore;
 
@@ -101,8 +101,12 @@ void test_semaphore(int n_threads, bool verbose) {
     }
     free(threads_args);
 
-    printf("Counter : %d\n", *counter);
-    free(counter);
+    if (verbose) {
+        printf("Counter : %d, expected: %d\n", *counter, (10000 * n_threads));
+        printf("Finished running the semaphore test program\n");
+    }
+
+    free((int *) counter);
 
     semaphore_destroy(&semaphore);
 }
@@ -116,6 +120,7 @@ void *test_semaphore_thread_func(void *arg) {
             printf("Thread #%d got past the sem and is incrementing counter\n", args->id);
         }
         (*args->counter)++;
+//        *args->counter = *args->counter + 1;
         semaphore_post(args->semaphore);
     }
     pthread_exit(NULL);

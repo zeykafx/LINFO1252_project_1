@@ -75,3 +75,21 @@ valgrind: clean all
 		--log-file=$(LOGDIR)/$@.log \
 		$(BINDIR)/binary -o -N 4
 	@echo "\nCheck the log file: $(LOGDIR)/$@.log\n"
+
+philosophers: clean all
+	./$(BINDIR)/binary -v -N 8
+
+producer_consumer: clean all
+	./$(BINDIR)/binary -v -p 4 -c 4
+
+reader_writer: clean all
+	./$(BINDIR)/binary -v -r 4 -w 4
+
+test_and_set: clean all
+	./$(BINDIR)/binary -v -l 8
+
+test_and_test_and_set: clean all
+	./$(BINDIR)/binary -v -t 8
+
+semaphore: clean all
+	./$(BINDIR)/binary -v -s 3

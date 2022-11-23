@@ -21,7 +21,7 @@ void semaphore_post(semaphore_t *semaphore);
 
 // test program: -----
 typedef struct test_semaphore_threads_arguments {
-    int *counter;
+    volatile int *counter;
     semaphore_t *semaphore;
     bool verbose;
     int id;
