@@ -25,6 +25,7 @@ def plot_file(file, current_problems: (str, str)):
     reader = csv.reader(file, delimiter=",")
 
     threads = []
+
     y = []
     y_err = []
 
