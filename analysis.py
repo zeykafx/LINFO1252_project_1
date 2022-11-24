@@ -58,26 +58,25 @@ def plot_file(file, current_problems: (str, str)):
 
     width = 10
     height = 8
+
     X_axis = np.arange(threads[0], threads[-1]+1, 1) + 0.2
     plt.figure(figsize=(width, height))
 
-    plt.bar(X_axis, y, 0.4, label=new_problem)
-    plt.errorbar(X_axis, y, y_err, fmt=".", color="Black", elinewidth=2, capthick=10, errorevery=1, alpha=0.5, ms=4,
-                 capsize=2)
+    plt.bar(X_axis, y, 0.4, zorder=3, label=new_problem)
+    plt.errorbar(X_axis, y, y_err, zorder=4, fmt=".", color="k", errorevery=1, capsize=5)
 
-    plt.bar(X_axis - 0.4, old_problem_y, 0.4, label=old_problem.replace("old_", "") + " with pthread sync" if new_problem != CurrentProblem.TEST_AND_SET_LOCK.value else old_problem.replace("old_", ""))
-    plt.errorbar(X_axis - 0.4, old_problem_y, old_problem_y_err, fmt=".", color="Black", elinewidth=2, capthick=10, errorevery=1,
-                 alpha=0.5, ms=4,
-                 capsize=2)
+    plt.bar(X_axis - 0.4, old_problem_y, 0.4, zorder=3, label=old_problem.replace("old_", "") + " with pthread sync" if new_problem != CurrentProblem.TEST_AND_SET_LOCK.value else old_problem.replace("old_", ""))
+    plt.errorbar(X_axis - 0.4, old_problem_y, old_problem_y_err, zorder=4, fmt=".", color="k", errorevery=1, capsize=5)
 
     name = new_problem.replace("_", " ")
     if new_problem == CurrentProblem.TEST_AND_SET_LOCK.value:
         name = new_problem.replace("_", " ") + " & test and test and and set"
 
-    plt.title(f"{name} problem: time taken for N threads, avg of 5 runs")
+    plt.title(f"{name.capitalize()} problem: time taken for N threads, avg of 5 runs")
 
     plt.xlabel("Number of threads per run")
     plt.ylabel("Time taken in seconds for each run")
+    plt.grid(alpha=0.4, zorder=0)
     plt.legend()
     plt.savefig(f'./data/figure_{new_problem}.png', dpi=400, transparent=False)
     # plt.show()
