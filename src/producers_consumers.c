@@ -21,6 +21,8 @@ semaphore_t full;
 volatile int produced_elements = 0;
 volatile int consumed_elements = 0;
 
+volatile int prod_cons_dump = 0;
+
 void producer_consumer(int n_prods, int n_cons, bool verbose, bool using_pthread_sync) {
     if (using_pthread_sync && verbose) {
         printf("Running the producer consumer problem using pthread sync\n");
@@ -212,7 +214,9 @@ void *producer(void *args) {
         }
 
         // simulate busy work
-        for (int i = 0; i < BUSY_WORK_CYCLES; i++) {}
+        for (int _ = 0; _ < BUSY_WORK_CYCLES; _++) {
+            prod_cons_dump++;
+        }
 
     }
     pthread_exit(NULL);
@@ -283,7 +287,9 @@ void *consumer(void *args) {
         }
 
         // simulate busy work
-        for (int i = 0; i < BUSY_WORK_CYCLES; i++) {}
+        for (int _ = 0; _ < BUSY_WORK_CYCLES; _++) {
+            prod_cons_dump++;
+        }
 
     }
     pthread_exit(NULL);

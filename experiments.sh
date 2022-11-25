@@ -5,17 +5,18 @@ DATA_FOLDER="./data"
 make -s clean &>/dev/null
 make -s &>/dev/null
 
-USING_PTHREAD=false
+USING_PTHREAD=$1
 
-rm "$DATA_FOLDER/$([[ $USING_PTHREAD = true ]] && echo "old_")philosophers.csv"
-rm "$DATA_FOLDER/$([[ $USING_PTHREAD = true ]] && echo "old_")reader_writer.csv"
-rm "$DATA_FOLDER/$([[ $USING_PTHREAD = true ]] && echo "old_")producer_consumer.csv"
-rm "$DATA_FOLDER/$([[ $USING_PTHREAD = true ]] && echo "old_")test_and_set_lock.csv"
-rm "$DATA_FOLDER/$([[ $USING_PTHREAD = true ]] && echo "old_")test_and_test_and_set_lock.csv"
+rm "$DATA_FOLDER/$([[ $USING_PTHREAD = true ]] && echo "pthread_")philosophers.csv"
+rm "$DATA_FOLDER/$([[ $USING_PTHREAD = true ]] && echo "pthread_")reader_writer.csv"
+rm "$DATA_FOLDER/$([[ $USING_PTHREAD = true ]] && echo "pthread_")producer_consumer.csv"
+rm "$DATA_FOLDER/$([[ $USING_PTHREAD = true ]] && echo "pthread_")test_and_set_lock.csv"
+rm "$DATA_FOLDER/$([[ $USING_PTHREAD = true ]] && echo "pthread_")test_and_test_and_set_lock.csv"
 
 CORE_COUNT=$(grep ^cpu\\scores /proc/cpuinfo | uniq | awk '{print $4}')
 MAX_THREADS=$((2 * "$CORE_COUNT"))
-threads=($(seq $MAX_THREADS))
+threads=($(seq 2 2 $MAX_THREADS))
+
 
 # Loop over all the arguments
 for pgm in N l t p,c w,r; do
@@ -26,7 +27,7 @@ for pgm in N l t p,c w,r; do
   current_problem=$([[ $1 = "N" ]] && echo "philosophers" || ([[ $1 = "w" ]] && echo "reader_writer" || ([[ $1 = "l" ]] && echo "test_and_set_lock" || ([[ $1 = "t" ]] && echo "test_and_test_and_set_lock" || echo "producer_consumer"))))
   echo "Running $current_problem"
   # echo "$current_problem" >>$FILENAME
-  FILENAME="$DATA_FOLDER/$([[ $USING_PTHREAD = true ]] && echo "old_")$current_problem.csv"
+  FILENAME="$DATA_FOLDER/$([[ $USING_PTHREAD = true ]] && echo "pthread_")$current_problem.csv"
 
   for t in "${threads[@]}"; do
     NUM_THREADS=0
@@ -42,13 +43,13 @@ for pgm in N l t p,c w,r; do
       # Otherwise, we are either going to run the producer/consumer or the reader/writer problem and we need to divide the number of threads in 2
       NUM_THREADS=$((t / 2))
 
-      if [ $((t % 2)) -eq 0 ]; then
-        # if t is pair, then assign the same number of threads to both arguments
-        IS_EVEN=true
-      else
-        # if its odd, then we'll add one more thread to the reader/writer
-        IS_EVEN=false
-      fi
+#      if [ $((t % 2)) -eq 0 ]; then
+#        # if t is pair, then assign the same number of threads to both arguments
+#        IS_EVEN=true
+#      else
+#        # if its odd, then we'll add one more thread to the reader/writer
+#        IS_EVEN=false
+#      fi
 
     fi
 
@@ -62,7 +63,7 @@ for pgm in N l t p,c w,r; do
         # if that's the case, and the number of thread is even, then we return the number of thread for that argument, otherwise we add one to the number of thread and return that sum
         # -> The second arg is always the consumer/reader (because of the outer for loop)
         START="$(date +%s.%N)"
-        ./bin/binary "$([[ $USING_PTHREAD = true ]] && echo "-o")" -"$1" $NUM_THREADS "$( ([[ "$1" != "N" ]] && [[ "$1" != "l" ]] && [[ "$1" != "t" ]]) && ([[ "$IS_EVEN" = true ]] && echo "-$2 $NUM_THREADS" || echo "-$2 $((NUM_THREADS + 1))"))"
+        ./bin/binary "$([[ $USING_PTHREAD = true ]] && echo "-o")" -"$1" $NUM_THREADS "$( ([[ "$1" != "N" ]] && [[ "$1" != "l" ]] && [[ "$1" != "t" ]]) && echo "-$2 $NUM_THREADS")"
         echo "$(date +%s.%N);$START," >>$FILENAME
 
         truncate -s -1 $FILENAME # removes the \n added by time

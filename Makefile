@@ -73,17 +73,17 @@ valgrind: clean all
 		--show-leak-kinds=all \
 		--leak-resolution=high \
 		--log-file=$(LOGDIR)/$@.log \
-		$(BINDIR)/binary -p 4 -c 4
+		$(BINDIR)/binary -p 2 -c 2 -o
 	@echo "\nCheck the log file: $(LOGDIR)/$@.log\n"
 
 philosophers: clean all
 	./$(BINDIR)/binary -v -N 8
 
 producer_consumer: clean all
-	./$(BINDIR)/binary -v -p 4 -c 4
+	./$(BINDIR)/binary -p 4 -c 4
 
 reader_writer: clean all
-	./$(BINDIR)/binary -v -r 4 -w 4
+	./$(BINDIR)/binary -r 4 -w 4
 
 test_and_set: clean all
 	./$(BINDIR)/binary -v -l 8
@@ -92,4 +92,10 @@ test_and_test_and_set: clean all
 	./$(BINDIR)/binary -v -t 8
 
 semaphore: clean all
-	./$(BINDIR)/binary -v -s 3
+	./$(BINDIR)/binary -v -s 8
+
+graphs:
+	./experiments.sh false
+	./experiments.sh true
+	./analysis.py
+	@echo "done"

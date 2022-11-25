@@ -28,15 +28,17 @@ void semaphore_wait(semaphore_t *semaphore) {
     lock_test_and_test_and_set(semaphore->mutex);
 
     // the calling thread is blocked while counter is 0
-    while (semaphore->counter < 1) {}
+    while (semaphore->counter < 1) {
+//        asm volatile ("nop");
+    }
 
-//    (semaphore->counter)--;
-    uint res;
-    asm volatile ("lock; xadd %0, %1"
-            : "=r"(res), "+m"(semaphore->counter)
-            : "0"(-1)
-            : "memory"
-            );
+    (semaphore->counter)--;
+//    uint res;
+//    asm volatile ("lock; xadd %0, %1"
+//            : "=r"(res), "+m"(semaphore->counter)
+//            : "0"(-1)
+//            : "memory"
+//            );
 
     unlock(semaphore->mutex);
 }

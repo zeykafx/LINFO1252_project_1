@@ -21,6 +21,8 @@ semaphore_t rsem, wsem;
 semaphore_t db;
 mutex_t *mutex;
 
+volatile int reader_writer_dump = 0;
+
 volatile int readcount, writecount = 0; // nombre de readers et de writers actif
 
 void reader_writer(int n_reader, int n_writer, bool verbose, bool using_pthread_sync) {
@@ -204,7 +206,6 @@ void *reader(void *args) {
                     sem_wait(&pthread_wsem);
                 } else {
                     semaphore_wait(&wsem);
-
                 }
             }
 
@@ -225,7 +226,10 @@ void *reader(void *args) {
         }
 
         // simulate busy work - read database
-        for (int _ = 0; _ < BUSY_WORK_CYCLES; _++) {}
+
+        for (int _ = 0; _ < BUSY_WORK_CYCLES; _++) {
+            reader_writer_dump++;
+        }
 
         if (arguments->using_pthread_sync) {
             pthread_mutex_lock(&pthread_mutex_readcount);
@@ -303,7 +307,9 @@ void *writer(void *args) {
                 printf("Writer #%d is writing data\n", arguments->id);
             }
             // simulate busy work - write data
-            for (int _ = 0; _ < BUSY_WORK_CYCLES; _++) {}
+            for (int _ = 0; _ < BUSY_WORK_CYCLES; _++) {
+                reader_writer_dump++;
+            }
 
         if (arguments->using_pthread_sync) {
             sem_post(&pthread_wsem);
