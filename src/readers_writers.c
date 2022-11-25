@@ -41,7 +41,6 @@ void reader_writer(int n_reader, int n_writer, bool verbose, bool using_pthread_
     semaphore_init(&rsem, 1);
     semaphore_init(&wsem, 1);
 
-
     int err = pthread_mutex_init(&pthread_mutex, NULL);
     if (err != 0) {
         perror("Failed to init reader writer mutex");
@@ -226,7 +225,6 @@ void *reader(void *args) {
         }
 
         // simulate busy work - read database
-
         for (int _ = 0; _ < BUSY_WORK_CYCLES; _++) {
             reader_writer_dump++;
         }

@@ -31,11 +31,13 @@ static void usage(void) {
     fprintf(stderr, "    [OPTIONS - You must set the number of threads for at least one option]\n");
     fprintf(stderr, "------- toggles -------\n");
     fprintf(stderr, "    -v verbose: shows additional information\n");
-    fprintf(stderr, "    -o using pthread sync: if on, the problems will be using pthread mutexes, and if off, it will be using our own mutex and semaphores\n");
+    fprintf(stderr,
+            "    -o using pthread sync: if on, the problems will be using pthread mutexes, and if off, it will be using our own mutex and semaphores\n");
     fprintf(stderr, "------- thread number --------\n");
 
     fprintf(stderr, "---- philosophers -----\n");
-    fprintf(stderr, "    -N number of philosophers (default: 0): set the number of philosophers (threads) that will run concurrently\n");
+    fprintf(stderr,
+            "    -N number of philosophers (default: 0): set the number of philosophers (threads) that will run concurrently\n");
 
     fprintf(stderr, "---- producer - consumer -----\n");
     fprintf(stderr, "    -c number of consumers (default: 0): set the number of consumer threads\n");
@@ -68,56 +70,69 @@ int options_parser(int argc, char *argv[], options_t *options) {
             case 'N':
                 options->number_philosophers = atoi(optarg);
                 if (options->number_philosophers == 0) {
-                    fprintf(stderr, "The number of philosophers must be greater than 0 (each philosopher is a thread), got: %s\n", optarg);
+                    fprintf(stderr,
+                            "The number of philosophers must be greater than 0 (each philosopher is a thread), got: %s\n",
+                            optarg);
                     return -1;
                 }
                 break;
             case 'c':
                 options->number_consumers = atoi(optarg);
                 if (options->number_consumers == 0) {
-                    fprintf(stderr, "The number of consumers must be greater than 0 (each consumer is a thread), got: %s\n", optarg);
+                    fprintf(stderr,
+                            "The number of consumers must be greater than 0 (each consumer is a thread), got: %s\n",
+                            optarg);
                     return -1;
                 }
                 break;
             case 'p':
                 options->number_producers = atoi(optarg);
                 if (options->number_producers == 0) {
-                    fprintf(stderr, "The number of producers must be greater than 0 (each producer is a thread), got: %s\n", optarg);
+                    fprintf(stderr,
+                            "The number of producers must be greater than 0 (each producer is a thread), got: %s\n",
+                            optarg);
                     return -1;
                 }
                 break;
             case 'r':
                 options->number_readers = atoi(optarg);
                 if (options->number_readers == 0) {
-                    fprintf(stderr, "The number of readers must be greater than 0 (each reader is a thread), got: %s\n", optarg);
+                    fprintf(stderr, "The number of readers must be greater than 0 (each reader is a thread), got: %s\n",
+                            optarg);
                     return -1;
                 }
                 break;
             case 'w':
                 options->number_writers = atoi(optarg);
                 if (options->number_writers == 0) {
-                    fprintf(stderr, "The number of writers must be greater than 0 (each writer is a thread), got: %s\n", optarg);
+                    fprintf(stderr, "The number of writers must be greater than 0 (each writer is a thread), got: %s\n",
+                            optarg);
                     return -1;
                 }
                 break;
             case 'l':
                 options->number_test_and_set_lock_threads = atoi(optarg);
                 if (options->number_test_and_set_lock_threads == 0) {
-                    fprintf(stderr, "The number of threads for the test_and_set lock must be greater than 0, got: %s\n", optarg);
+                    fprintf(stderr, "The number of threads for the test_and_set lock must be greater than 0, got: %s\n",
+                            optarg);
                     return -1;
                 }
                 break;
             case 't':
                 options->number_test_and_test_and_set_threads = atoi(optarg);
                 if (options->number_test_and_test_and_set_threads == 0) {
-                    fprintf(stderr, "The number of threads for the test_and_test_and_set lock must be greater than 0, got: %s\n", optarg);
+                    fprintf(stderr,
+                            "The number of threads for the test_and_test_and_set lock must be greater than 0, got: %s\n",
+                            optarg);
                     return -1;
                 }
                 break;
             case 's':
                 options->number_sem_test_threads = atoi(optarg);
                 if (options->number_sem_test_threads == 0) {
-                    fprintf(stderr, "The number of threads for the semaphore test program lock must be greater than 0, got: %s\n", optarg);
+                    fprintf(stderr,
+                            "The number of threads for the semaphore test program lock must be greater than 0, got: %s\n",
+                            optarg);
                     return -1;
                 }
                 break;

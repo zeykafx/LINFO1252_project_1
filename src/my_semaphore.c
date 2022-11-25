@@ -28,7 +28,7 @@ void semaphore_wait(semaphore_t *semaphore) {
     lock_test_and_test_and_set(semaphore->mutex);
 
     // the calling thread is blocked while counter is 0
-    while (semaphore->counter < 1) {}
+    while (semaphore->counter <= 0) {}
 
     (semaphore->counter)--;
 
@@ -48,7 +48,8 @@ void semaphore_post(semaphore_t *semaphore) {
 void test_semaphore(int n_threads, bool verbose) {
     pthread_t threads[n_threads];
 
-    test_semaphore_threads_arguments_t **threads_args = malloc(n_threads * sizeof(test_semaphore_threads_arguments_t *));
+    test_semaphore_threads_arguments_t **threads_args = malloc(
+            n_threads * sizeof(test_semaphore_threads_arguments_t *));
     if (threads_args == NULL) {
         perror("Failed to malloc args buffer");
         exit(EXIT_FAILURE);

@@ -5,8 +5,6 @@
 #include <stdlib.h>
 #include "../headers/producers_consumers.h"
 #include <alloca.h>
-#include <unistd.h>
-
 
 // test-and-set & test-and-test-and set lock implementation: ----------------------
 
@@ -36,8 +34,7 @@ int test_and_set(mutex_t *mutex, int value) {
             "xchg %%eax, %[lock];"                           // xchg eax and lock, eax is going to be equal to lock and vice versa
             "mov %%eax, %[value]"                            // move eax to value
             : [lock] "+m"(*mutex->lock), [value] "+r"(value)
-            :
-            : "eax"                                          // eax was clobbered
+            : : "eax"                                          // eax was clobbered
             );
     // the "+" denotes a read and write constraint, found in: https://gcc.gnu.org/onlinedocs/gcc/Modifiers.html#Modifiers
     return value;
@@ -65,18 +62,17 @@ void lock_test_and_test_and_set(mutex_t *mutex) {
 volatile int lock_dump = 0;
 
 void test_and_set_lock(bool verbose, int n_threads, int n_tatas_threads, bool is_simple_tas) {
-    mutex_t *mutex = mutex_init();
-
     if (n_threads > 0 && n_tatas_threads > 0) {
         fprintf(stderr, "Cannot run test_and_set at the same time as test_and_test_and_set, will run test_and_set\n");
         n_tatas_threads = 0;
     }
 
+    mutex_t *mutex = mutex_init();
+
     int number_of_threads = (is_simple_tas ? n_threads : n_tatas_threads);
 
     // allocate on the stack, will be freed automatically
     pthread_t *threads = alloca(number_of_threads * sizeof(pthread_t));
-
 
     test_and_set_lock_threads_args_t **args_buffer = malloc(
             number_of_threads * sizeof(test_and_set_lock_threads_args_t *));

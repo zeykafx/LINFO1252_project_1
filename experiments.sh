@@ -17,7 +17,6 @@ CORE_COUNT=$(grep ^cpu\\scores /proc/cpuinfo | uniq | awk '{print $4}')
 MAX_THREADS=$((2 * "$CORE_COUNT"))
 threads=($(seq 2 2 $MAX_THREADS))
 
-
 # Loop over all the arguments
 for pgm in N l t p,c w,r; do
   IFS=","
@@ -43,13 +42,13 @@ for pgm in N l t p,c w,r; do
       # Otherwise, we are either going to run the producer/consumer or the reader/writer problem and we need to divide the number of threads in 2
       NUM_THREADS=$((t / 2))
 
-#      if [ $((t % 2)) -eq 0 ]; then
-#        # if t is pair, then assign the same number of threads to both arguments
-#        IS_EVEN=true
-#      else
-#        # if its odd, then we'll add one more thread to the reader/writer
-#        IS_EVEN=false
-#      fi
+      #      if [ $((t % 2)) -eq 0 ]; then
+      #        # if t is pair, then assign the same number of threads to both arguments
+      #        IS_EVEN=true
+      #      else
+      #        # if its odd, then we'll add one more thread to the reader/writer
+      #        IS_EVEN=false
+      #      fi
 
     fi
 

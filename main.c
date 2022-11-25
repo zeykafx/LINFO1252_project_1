@@ -19,14 +19,17 @@ int main(int argc, char *argv[]) {
         philosophers(options.number_philosophers, options.verbose, options.running_problems_with_pthread_sync);
     }
     if (options.number_producers > 0 && options.number_consumers > 0) {
-        producer_consumer(options.number_producers, options.number_consumers, options.verbose, options.running_problems_with_pthread_sync);
+        producer_consumer(options.number_producers, options.number_consumers, options.verbose,
+                          options.running_problems_with_pthread_sync);
     }
     if (options.number_readers > 0 && options.number_writers > 0) {
-        reader_writer(options.number_readers, options.number_writers, options.verbose, options.running_problems_with_pthread_sync);
+        reader_writer(options.number_readers, options.number_writers, options.verbose,
+                      options.running_problems_with_pthread_sync);
     }
     if (options.number_test_and_set_lock_threads > 0 || options.number_test_and_test_and_set_threads > 0) {
         bool is_simple_test_and_set = options.number_test_and_set_lock_threads > 0;
-        test_and_set_lock(options.verbose, options.number_test_and_set_lock_threads, options.number_test_and_test_and_set_threads, is_simple_test_and_set);
+        test_and_set_lock(options.verbose, options.number_test_and_set_lock_threads,
+                          options.number_test_and_test_and_set_threads, is_simple_test_and_set);
     }
     if (options.number_sem_test_threads > 0) {
         test_semaphore(options.number_sem_test_threads, options.verbose);

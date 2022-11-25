@@ -1,6 +1,5 @@
 # Makefile template copied and modified from https://github.com/pantuza/c-project-template
 
-
 # Source code directory structure
 BINDIR := bin
 SRCDIR := src
@@ -24,13 +23,6 @@ DEBUG := -g3 -DDEBUG=1
 # Dependency libraries
 LIBS := -lpthread
 
-# Test libraries
-TEST_LIBS := -lcunit
-
-# Tests binary file
-TEST_BINARY := binary_test_runner
-
-
 # %.o file names
 NAMES := $(notdir $(basename $(wildcard $(SRCDIR)/*.c)))
 OBJECTS :=$(patsubst %,$(LIBDIR)/%.o,$(NAMES))
@@ -53,13 +45,6 @@ all: main.c $(OBJECTS)
 			  "$(BINDIR)/binary\n";
 
 
-# Compile tests and run the test binary
-tests: $(TESTDIR)/tests.c $(OBJECTS)
-	$(CC) $+ -o $(BINDIR)/$(TEST_BINARY) $(CFLAGS) $(DEBUG) $(LIBS) $(TEST_LIBS)
-	@echo " Running tests: ";
-	./$(BINDIR)/$(TEST_BINARY)
-
-
 # Rule for cleaning the project
 clean:
 	@rm -rvf $(BINDIR)/* $(LIBDIR)/* $(LOGDIR)/*;
@@ -73,7 +58,7 @@ valgrind: clean all
 		--show-leak-kinds=all \
 		--leak-resolution=high \
 		--log-file=$(LOGDIR)/$@.log \
-		$(BINDIR)/binary -p 2 -c 2 -o
+		$(BINDIR)/binary -p 2 -c 2
 	@echo "\nCheck the log file: $(LOGDIR)/$@.log\n"
 
 philosophers: clean all
