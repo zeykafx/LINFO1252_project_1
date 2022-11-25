@@ -14,7 +14,7 @@ mutex_t *mutex_init(void);
 
 void mutex_destroy(mutex_t *mutex);
 
-int test_and_set(mutex_t *mutex);
+int test_and_set(mutex_t *mutex, int value);
 
 void lock(mutex_t *mutex);
 

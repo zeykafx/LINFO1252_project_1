@@ -16,7 +16,7 @@ STD := -std=gnu99
 WARNS := -Wall -Wextra -pedantic # -pedantic warns on language standards
 
 # Flags for compiling
-CFLAGS := -I headers/ -O3 $(STD) $(WARNS)
+CFLAGS := -I headers/ $(STD) $(WARNS)
 
 # Debug options
 DEBUG := -g3 -DDEBUG=1

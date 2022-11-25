@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include "../headers/producers_consumers.h"
 #include <alloca.h>
+#include <unistd.h>
 
 
 // test-and-set & test-and-test-and set lock implementation: ----------------------
@@ -29,43 +30,32 @@ void mutex_destroy(mutex_t *mutex) {
     free(mutex);
 }
 
-int test_and_set(mutex_t *mutex) {
-    int value = 1;
-    // the "lock" is just there to make sure that it will indeed be an atomic operation
+int test_and_set(mutex_t *mutex, int value) {
     asm volatile (
-            "lock; xchgl %0, %1"
-            : "+m"(*mutex->lock), "+a"(value)
+            "mov %[value], %%eax;"                           // move value to eax
+            "xchg %%eax, %[lock];"                           // xchg eax and lock, eax is going to be equal to lock and vice versa
+            "mov %%eax, %[value]"                            // move eax to value
+            : [lock] "+m"(*mutex->lock), [value] "+r"(value)
             :
-            : "memory"
+            : "eax"                                          // eax was clobbered
             );
-    // "a" means value goes into eax first, "m" means that lock is read from memory
     // the "+" denotes a read and write constraint, found in: https://gcc.gnu.org/onlinedocs/gcc/Modifiers.html#Modifiers
     return value;
 }
 
 void lock(mutex_t *mutex) {
-//    int val = 1;
-//    do {
-//        val = test_and_set(mutex);
-//    } while (val - (*mutex->lock) == 0); // loop while value isn't 1, meaning lock was 0, so another thread had the lock
-
     // spin until test_and_set returns 1, meaning we got the lock
-    while (test_and_set(mutex) != 0) {
-//        asm volatile ("nop");
-    }
-
+    while (test_and_set(mutex, 1) != 0) {}
 }
 
 void unlock(mutex_t *mutex) {
     int value = 0;
-    asm volatile ("lock; xchgl %0, %1" : "+a"(value), "+m"(*mutex->lock): : "memory"); // sets the lock variable back to 0
+    test_and_set(mutex, value);
 }
 
 void lock_test_and_test_and_set(mutex_t *mutex) {
-    while (test_and_set(mutex) != 0) {
-        while (*mutex->lock != 0) {
-            asm volatile ("nop");
-        }
+    while (test_and_set(mutex, 1) != 0) {
+        while (*mutex->lock != 0) {}
     }
 }
 
