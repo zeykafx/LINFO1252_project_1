@@ -29,7 +29,7 @@ def plot_file(new_problem, pthread_problem):
     pthread_problem_y = []
     pthread_problem_y_err = []
 
-    with open(f"./data/{new_problem}.csv") as file:
+    with open(f"./data/ingi_server_data/{new_problem}_server.csv") as file:
         reader = csv.reader(file, delimiter=",")
         for row in reader:
             threads.append(int(row[0]))
@@ -42,7 +42,7 @@ def plot_file(new_problem, pthread_problem):
             y_err.append(stdev)
             y.append(statistics.mean(float_row))
 
-    with open(f"./data/{pthread_problem}.csv") as f2:
+    with open(f"./data/ingi_server_data/{pthread_problem}_server.csv") as f2:
         reader2 = csv.reader(f2, delimiter=",")
         for row2 in reader2:
             float_row2 = []
@@ -87,7 +87,7 @@ def plot_file(new_problem, pthread_problem):
     plt.ylabel("Time taken in seconds for each run")
     plt.grid(alpha=0.4, zorder=0)
     plt.legend()
-    plt.savefig(f'./data/figure_{new_problem}.png', dpi=400, transparent=False)
+    plt.savefig(f'./data/ingi_server_data/figure_{new_problem}_server.png', dpi=400, transparent=False)
     # plt.show()
 
 
