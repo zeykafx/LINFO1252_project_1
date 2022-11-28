@@ -6,8 +6,6 @@
 #define CYCLES 8192
 #define BUSY_WORK_CYCLES 10000
 
-int *buffer;
-int *consumed_buffer;
 
 typedef struct prod_cons_args {
     bool verbose;
