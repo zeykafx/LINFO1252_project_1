@@ -29,15 +29,13 @@ static void set_default_options(options_t *options) {
 static void usage(void) {
     fprintf(stderr, "USAGE:\n");
     fprintf(stderr, "    [OPTIONS - You must set the number of threads for at least one option]\n");
-    fprintf(stderr, "------- toggles -------\n");
+    fprintf(stderr, "------- Flags -------\n");
     fprintf(stderr, "    -v verbose: shows additional information\n");
-    fprintf(stderr,
-            "    -o using pthread sync: if on, the problems will be using pthread mutexes, and if off, it will be using our own mutex and semaphores\n");
+    fprintf(stderr, "    -o using pthread sync: if on, the problems will be using pthread mutexes, and if off, it will be using our own mutex and semaphores\n");
     fprintf(stderr, "------- thread number --------\n");
 
     fprintf(stderr, "---- philosophers -----\n");
-    fprintf(stderr,
-            "    -N number of philosophers (default: 0): set the number of philosophers (threads) that will run concurrently\n");
+    fprintf(stderr, "    -N number of philosophers (default: 0): set the number of philosophers (threads) that will run concurrently\n");
 
     fprintf(stderr, "---- producer - consumer -----\n");
     fprintf(stderr, "    -c number of consumers (default: 0): set the number of consumer threads\n");
@@ -45,7 +43,7 @@ static void usage(void) {
 
     fprintf(stderr, "---- reader - writer -----\n");
     fprintf(stderr, "    -r number of readers (default: 0): set the number of reader threads\n");
-    fprintf(stderr, "    -r number of writers (default: 0): set the number of writer threads\n");
+    fprintf(stderr, "    -w number of writers (default: 0): set the number of writer threads\n");
 
     fprintf(stderr, "---- Test-and-set - Test-and-test-and-set -----\n");
     fprintf(stderr, "    -l number of threads for the test_and_set lock (default: 0)\n");

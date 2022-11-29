@@ -6,7 +6,7 @@
 #include "../headers/producers_consumers.h"
 #include <alloca.h>
 
-// test-and-set & test-and-test-and set lock implementation: ----------------------
+// test-and-set & test-and-test-and-set lock implementation: ----------------------
 
 mutex_t *mutex_init(void) {
     mutex_t *mutex = malloc(sizeof(mutex_t));
@@ -28,11 +28,15 @@ void mutex_destroy(mutex_t *mutex) {
     free(mutex);
 }
 
+/*
+ * swaps the mutex integer and 'value' atomically, then return value
+ * *mutex->lock is going to be equal to 'value' and 'value' is going to be equal to *mutex->lock
+*/
 int test_and_set(mutex_t *mutex, int value) {
     asm volatile (
-            "mov %[value], %%eax;"                           // move value to eax
-            "xchg %%eax, %[lock];"                           // xchg eax and lock, eax is going to be equal to lock and vice versa
-            "mov %%eax, %[value]"                            // move eax to value
+            "mov %[value], %%eax;"                             // move value to eax
+            "xchg %%eax, %[lock];"                             // xchg eax and lock, eax is going to be equal to lock and vice versa
+            "mov %%eax, %[value]"                              // move eax to value
             : [lock] "+m"(*mutex->lock), [value] "+r"(value)
             : : "eax"                                          // eax was clobbered
             );
@@ -40,16 +44,19 @@ int test_and_set(mutex_t *mutex, int value) {
     return value;
 }
 
+// spinlock - locks the mutex, and uses busy waiting while the mutex is already locked
 void lock(mutex_t *mutex) {
     // spin until test_and_set returns 1, meaning we got the lock
     while (test_and_set(mutex, 1) != 0) {}
 }
 
+// unlocks the mutex
 void unlock(mutex_t *mutex) {
     int value = 0;
     test_and_set(mutex, value);
 }
 
+// test-and-test-and-set lock, locks the mutex, spin while the lock is held by another thread and then act like a normal test and set spinlock
 void lock_test_and_test_and_set(mutex_t *mutex) {
     while (test_and_set(mutex, 1) != 0) {
         while (*mutex->lock != 0) {}

@@ -10,11 +10,14 @@
 int main(int argc, char *argv[]) {
     options_t options;
 
+    // parses arguments
     options_parser(argc, argv, &options);
     if (options.verbose) {
         printf("Verbose mode enabled - the program will output debug information.\n");
     }
 
+
+    // start only the problems that have arguments set
     if (options.number_philosophers > 0) {
         philosophers(options.number_philosophers, options.verbose, options.running_problems_with_pthread_sync);
     }

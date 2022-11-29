@@ -5,16 +5,18 @@ DATA_FOLDER="./data"
 make -s clean &>/dev/null
 make -s &>/dev/null
 
+# call the script with `false` to test the program with our sync primitives, and call with `true` to test with pthread sync primitives
 USING_PTHREAD=$1
 
+# delete old perf data
 rm "$DATA_FOLDER/$([[ $USING_PTHREAD = true ]] && echo "pthread_")philosophers.csv"
 rm "$DATA_FOLDER/$([[ $USING_PTHREAD = true ]] && echo "pthread_")reader_writer.csv"
 rm "$DATA_FOLDER/$([[ $USING_PTHREAD = true ]] && echo "pthread_")producer_consumer.csv"
 rm "$DATA_FOLDER/$([[ $USING_PTHREAD = true ]] && echo "pthread_")test_and_set_lock.csv"
 rm "$DATA_FOLDER/$([[ $USING_PTHREAD = true ]] && echo "pthread_")test_and_test_and_set_lock.csv"
 
-CORE_COUNT=$(grep ^cpu\\scores /proc/cpuinfo | uniq | awk '{print $4}')
-MAX_THREADS=$((2 * "$CORE_COUNT"))
+#CORE_COUNT=$(grep ^cpu\\scores /proc/cpuinfo | uniq | awk '{print $4}')
+#MAX_THREADS=$((2 * "$CORE_COUNT"))
 #threads=($(seq 2 2 $MAX_THREADS))
 threads=(2 4 8 16 32 64)
 
@@ -43,14 +45,6 @@ for pgm in N l t p,c w,r; do
     else
       # Otherwise, we are either going to run the producer/consumer or the reader/writer problem and we need to divide the number of threads in 2
       NUM_THREADS=$((t / 2))
-
-      #      if [ $((t % 2)) -eq 0 ]; then
-      #        # if t is pair, then assign the same number of threads to both arguments
-      #        IS_EVEN=true
-      #      else
-      #        # if its odd, then we'll add one more thread to the reader/writer
-      #        IS_EVEN=false
-      #      fi
 
     fi
 
