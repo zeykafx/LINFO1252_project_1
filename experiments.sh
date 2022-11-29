@@ -20,6 +20,7 @@ rm "$DATA_FOLDER/$([[ $USING_PTHREAD = true ]] && echo "pthread_")test_and_test_
 #threads=($(seq 2 2 $MAX_THREADS))
 threads=(2 4 8 16 32 64)
 
+echo "$( ([[ $USING_PTHREAD = true ]] && echo "Running with pthread sync") || echo "Running with own sync")"
 
 # Loop over all the arguments
 for pgm in N l t p,c w,r; do
