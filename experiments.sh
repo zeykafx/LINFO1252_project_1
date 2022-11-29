@@ -15,7 +15,9 @@ rm "$DATA_FOLDER/$([[ $USING_PTHREAD = true ]] && echo "pthread_")test_and_test_
 
 CORE_COUNT=$(grep ^cpu\\scores /proc/cpuinfo | uniq | awk '{print $4}')
 MAX_THREADS=$((2 * "$CORE_COUNT"))
-threads=($(seq 2 2 $MAX_THREADS))
+#threads=($(seq 2 2 $MAX_THREADS))
+threads=(2 4 8 16 32 64)
+
 
 # Loop over all the arguments
 for pgm in N l t p,c w,r; do
@@ -63,7 +65,7 @@ for pgm in N l t p,c w,r; do
         # -> The second arg is always the consumer/reader (because of the outer for loop)
         START="$(date +%s.%N)"
         ./bin/binary "$([[ $USING_PTHREAD = true ]] && echo "-o")" -"$1" $NUM_THREADS "$( ([[ "$1" != "N" ]] && [[ "$1" != "l" ]] && [[ "$1" != "t" ]]) && echo "-$2 $NUM_THREADS")"
-        echo "$(date +%s.%N);$START," >>$FILENAME
+        echo "$(date +%s.%N);$START," >>$FILENAME # we dont compute the time taken in here, instead we let the python script compute the difference.
 
         truncate -s -1 $FILENAME # removes the \n added by time
       done
