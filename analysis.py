@@ -12,6 +12,7 @@ file_path = "./data/"
 if USING_INGI_DATA:
     file_path += "ingi_server_data/"
 
+
 class CurrentProblem(Enum):
     PHILOSOPHERS = "philosophers"
     PHILOSOPHERS_pthread = "pthread_philosophers"
@@ -24,7 +25,6 @@ class CurrentProblem(Enum):
 
 
 def plot_file(new_problem, pthread_problem):
-
     threads = []
 
     y = []
@@ -32,11 +32,10 @@ def plot_file(new_problem, pthread_problem):
 
     pthread_problem_y = []
     pthread_problem_y_err = []
-    
 
     extension = ""
     if USING_INGI_DATA:
-        extension+="_server"
+        extension += "_server"
     with open(f"{file_path}{new_problem}{extension}.csv") as file:
         reader = csv.reader(file, delimiter=",")
         for row in reader:
@@ -73,16 +72,11 @@ def plot_file(new_problem, pthread_problem):
 
     plt.figure(figsize=(width, height))
 
-    plt.bar(X_axis - bar_width / 2, y, bar_width, zorder=3, label=new_problem)
-    plt.errorbar(X_axis - bar_width / 2, y, y_err, zorder=4, fmt="none", color="k", errorevery=1, capsize=10, lw=3,
-                 capthick=2)
+    plt.plot(X_axis, y, 'o-', label=new_problem, color='#CC4F1B')
+    plt.fill_between(X_axis, np.subtract(y, y_err), np.add(y, y_err), alpha=0.2, edgecolor='#CC4F1B', facecolor='#FF9848')
 
-    plt.bar(X_axis + bar_width / 2, pthread_problem_y, bar_width, zorder=3, label=pthread_problem.replace("pthread_",
-                                                                                                          "") + " with pthread sync" if new_problem != CurrentProblem.TEST_AND_SET_LOCK.value else pthread_problem.replace(
-        "pthread_", ""))
-    plt.errorbar(X_axis + bar_width / 2, pthread_problem_y, pthread_problem_y_err, zorder=4, fmt="none", color="k",
-                 errorevery=1, capsize=10, capthick=2, lw=3)
-
+    plt.plot(X_axis, pthread_problem_y, 'o-', color='#1B2ACC', label=pthread_problem.replace("pthread_", "") + " with pthread sync" if new_problem != CurrentProblem.TEST_AND_SET_LOCK.value else pthread_problem.replace("pthread_", ""))
+    plt.fill_between(X_axis, np.subtract(pthread_problem_y, pthread_problem_y_err), np.add(pthread_problem_y, pthread_problem_y_err), alpha=0.2, edgecolor='#1B2ACC', facecolor='#089FFF')
     name = new_problem.replace("_", " ")
     if new_problem == CurrentProblem.TEST_AND_SET_LOCK.value:
         name = new_problem.replace("_", " ") + " & test and test and and set"
