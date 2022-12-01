@@ -222,6 +222,12 @@ void *producer(void *args) {
         }
 
     }
+    if (arguments->using_pthread_sync) {
+        sem_post(&pthread_full);
+    } else {
+        semaphore_post(&full);
+    }
+
     pthread_exit(NULL);
 }
 
@@ -294,6 +300,11 @@ void *consumer(void *args) {
             prod_cons_dump++;
         }
 
+    }
+    if (arguments->using_pthread_sync) {
+        sem_post(&pthread_empty);
+    } else {
+        semaphore_post(&empty);
     }
     pthread_exit(NULL);
 }

@@ -11,7 +11,6 @@ pthread_mutex_t pthread_mutex_readcount, pthread_mutex_writercount;
 pthread_mutex_t pthread_readtry;
 sem_t pthread_rsem, pthread_wsem;
 sem_t pthread_db;
-pthread_mutex_t pthread_mutex;
 
 // our mutex and semaphore, used by default
 mutex_t *mutex_readcount, *mutex_writercount;
@@ -19,7 +18,6 @@ mutex_t *readtry;
 semaphore_t rsem, wsem;
 
 semaphore_t db;
-mutex_t *mutex;
 
 volatile int reader_writer_dump = 0;
 
@@ -32,7 +30,7 @@ void reader_writer(int n_reader, int n_writer, bool verbose, bool using_pthread_
 
     pthread_t readers[n_reader], writers[n_writer];
 
-    mutex = mutex_init();
+//    mutex = mutex_init();
     mutex_readcount = mutex_init();
     mutex_writercount = mutex_init();
     readtry = mutex_init();
@@ -41,12 +39,7 @@ void reader_writer(int n_reader, int n_writer, bool verbose, bool using_pthread_
     semaphore_init(&rsem, 1);
     semaphore_init(&wsem, 1);
 
-    int err = pthread_mutex_init(&pthread_mutex, NULL);
-    if (err != 0) {
-        perror("Failed to init reader writer mutex");
-        exit(EXIT_FAILURE);
-    }
-    err = pthread_mutex_init(&pthread_readtry, NULL);
+    int err = pthread_mutex_init(&pthread_readtry, NULL);
     if (err != 0) {
         perror("Failed to init reader writer mutex");
         exit(EXIT_FAILURE);
@@ -142,16 +135,10 @@ void reader_writer(int n_reader, int n_writer, bool verbose, bool using_pthread_
     }
 
     // Clean up
-    mutex_destroy(mutex);
     mutex_destroy(readtry);
     mutex_destroy(mutex_readcount);
     mutex_destroy(mutex_writercount);
 
-    err = pthread_mutex_destroy(&pthread_mutex);
-    if (err != 0) {
-        perror("Failed to destroy reader writer mutex");
-        exit(EXIT_FAILURE);
-    }
     err = pthread_mutex_destroy(&pthread_readtry);
     if (err != 0) {
         perror("Failed to destroy reader writer mutex");

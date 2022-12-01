@@ -58,7 +58,7 @@ valgrind: clean all
 		--show-leak-kinds=all \
 		--leak-resolution=high \
 		--log-file=$(LOGDIR)/$@.log \
-		$(BINDIR)/binary -p 2 -c 2
+		$(BINDIR)/binary -p 4 -c 4 -o
 	@echo "\nCheck the log file: $(LOGDIR)/$@.log\n"
 
 philosophers: clean all
