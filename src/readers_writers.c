@@ -16,9 +16,9 @@ sem_t pthread_db;
 mutex_t *mutex_readcount, *mutex_writercount;
 mutex_t *readtry;
 semaphore_t rsem, wsem;
-
 semaphore_t db;
 
+// dump variable used to make sure that the busy work loops are kept in the program and actually do stuff
 volatile int reader_writer_dump = 0;
 
 volatile int readcount, writecount = 0; // nombre de readers et de writers actif
@@ -30,7 +30,7 @@ void reader_writer(int n_reader, int n_writer, bool verbose, bool using_pthread_
 
     pthread_t readers[n_reader], writers[n_writer];
 
-//    mutex = mutex_init();
+    // own sync primitives initialization
     mutex_readcount = mutex_init();
     mutex_writercount = mutex_init();
     readtry = mutex_init();
@@ -39,6 +39,7 @@ void reader_writer(int n_reader, int n_writer, bool verbose, bool using_pthread_
     semaphore_init(&rsem, 1);
     semaphore_init(&wsem, 1);
 
+    // pthread sync primitives initialization
     int err = pthread_mutex_init(&pthread_readtry, NULL);
     if (err != 0) {
         perror("Failed to init reader writer mutex");
@@ -100,7 +101,6 @@ void reader_writer(int n_reader, int n_writer, bool verbose, bool using_pthread_
         reader_args[i]->number_of_threads = n_reader;
         reader_args[i]->using_pthread_sync = using_pthread_sync;
 
-
         pthread_create(&readers[i], NULL, reader, (void *) reader_args[i]);
     }
 
@@ -158,6 +158,7 @@ void reader_writer(int n_reader, int n_writer, bool verbose, bool using_pthread_
     semaphore_destroy(&db);
     semaphore_destroy(&wsem);
     semaphore_destroy(&rsem);
+
     sem_destroy(&pthread_db);
     sem_destroy(&pthread_wsem);
     sem_destroy(&pthread_rsem);

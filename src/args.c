@@ -26,6 +26,7 @@ static void set_default_options(options_t *options) {
     options->verbose = false;
 }
 
+// prints the usage help message
 static void usage(void) {
     fprintf(stderr, "USAGE:\n");
     fprintf(stderr, "    [OPTIONS - You must set the number of threads for at least one option]\n");

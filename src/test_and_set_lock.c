@@ -38,7 +38,7 @@ int test_and_set(mutex_t *mutex, int value) {
             "xchg %%eax, %[lock];"                             // xchg eax and lock, eax is going to be equal to lock and vice versa
             "mov %%eax, %[value]"                              // move eax to value
             : [lock] "+m"(*mutex->lock), [value] "+r"(value)
-            : : "eax", "memory"                                         // eax was clobbered
+            : : "eax"                                          // eax was clobbered
             );
     // the "+" denotes a read and write constraint, found in: https://gcc.gnu.org/onlinedocs/gcc/Modifiers.html#Modifiers
     return value;

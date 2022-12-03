@@ -18,9 +18,11 @@ mutex_t *mutex;
 semaphore_t empty;
 semaphore_t full;
 
+// these variables are used to make sure that the producers and the consumers don't produce or consume more elements than needed
 volatile int produced_elements = 0;
 volatile int consumed_elements = 0;
 
+// this variable is used to make sure that the loops we used to simulate work are not optimized-out of the program by the compiler
 volatile int prod_cons_dump = 0;
 
 int *buffer;
@@ -33,11 +35,7 @@ void producer_consumer(int n_prods, int n_cons, bool verbose, bool using_pthread
 
     pthread_t prods[n_prods], cons[n_cons];
 
-    mutex = mutex_init();
-
-    semaphore_init(&empty, BUFFER_SIZE);
-    semaphore_init(&full, 0);
-
+    // init the pthread sync
     int error = pthread_mutex_init(&pthread_mutex, NULL);
     if (error != 0) {
         perror("Failed to init prod cons mutex");
@@ -47,6 +45,12 @@ void producer_consumer(int n_prods, int n_cons, bool verbose, bool using_pthread
     sem_init(&pthread_empty, 0, BUFFER_SIZE);  // buffer vide
     sem_init(&pthread_full, 0, 0);             // buffer vide
 
+    // init our sync primitives
+    mutex = mutex_init();
+
+    semaphore_init(&empty, BUFFER_SIZE);
+    semaphore_init(&full, 0);
+
 
     // shared buffer, this will store the produced items
     buffer = malloc(BUFFER_SIZE * sizeof(int));
@@ -55,8 +59,8 @@ void producer_consumer(int n_prods, int n_cons, bool verbose, bool using_pthread
         exit(EXIT_FAILURE);
     }
 
-    // shared buffer used to indicate which index of the normal shared buffer has a produced
-    // item ready to be consumed
+    // this shared buffer is used to indicate which index of the normal shared buffer has a produced
+    // item ready to be consumed, we could have used two ints like "next_in" and "next_out" but we figured this was good enough, and since we test the performance of the producer/consumer on the same code, it should be fine.
     consumed_buffer = calloc(BUFFER_SIZE, sizeof(int));
     if (consumed_buffer == NULL) {
         perror("Failed to malloc consumed buffer");

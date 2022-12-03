@@ -18,12 +18,12 @@ int semaphore_destroy(semaphore_t *semaphore) {
     return 0;
 }
 
-// decrements the semaphore value, and block the calling thread until the semaphore value is greater than 0
+// decrements the semaphore value, and block the calling thread while the semaphore value is less than or equal to 0
 void semaphore_wait(semaphore_t *semaphore) {
 
-    // only one thread at a time is going to be let through the mutex, and if a thread locked the mutex but the counter is 0
-    // it will spin until the counter is incremented, any thread that call semaphore_wait during this will be waiting on
-    // the lock instead.
+    // only one thread at a time is going to be let through the mutex, and if a thread locks the mutex but the counter is 0
+    // that thread will spin until the counter is incremented, any thread that call semaphore_wait during this will be waiting on
+    // the locked mutex instead.
 
     lock_test_and_test_and_set(semaphore->mutex);
 

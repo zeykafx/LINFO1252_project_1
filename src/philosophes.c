@@ -26,8 +26,7 @@ void philosophers(int n_philosophers, bool verbose, bool using_pthread_sync) {
     // own mutex
     mutex_t *baguette[n_philosophers];
 
-
-    // for each philosopher, we create a mutex, a thread, and we start the thread
+    // init n mutexes
     for (int i = 0; i < n_philosophers; ++i) {
         int err = pthread_mutex_init(&pthread_baguette[i], NULL);
         if (err != 0) {
@@ -43,6 +42,7 @@ void philosophers(int n_philosophers, bool verbose, bool using_pthread_sync) {
         exit(EXIT_FAILURE);
     }
 
+    // init the args and start the threads (philosophers)
     for (int i = 0; i < n_philosophers; ++i) {
         args_buffer[i] = malloc(sizeof(philosophers_args_t));
         args_buffer[i]->number_of_philosophers = n_philosophers;
