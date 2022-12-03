@@ -4,13 +4,14 @@
 
 ## Instructions
 Pour lancer le projet, vous pouvez utiliser une des targets dans le makefile pour clean, compiler et lancer un problème avec un nombre prédéfinis de threads.
-Sinon, vous pouvez nettoyer les fichiers compilé avec `make clean`, puis compiler tout avec `make` (ou `make all`), et puis lancer le programme avec `./bin/binary [ARGUMENTS HERE]`, pour la liste d'arguments disponible, voir ci-dessous.
+Sinon, vous pouvez nettoyer les fichiers compilés avec `make clean`, puis compiler tout avec `make` (ou `make all`), et puis lancer le programme avec `./bin/binary [ARGUMENTS HERE]`, pour la liste d'arguments disponible, voir ci-dessous.
 
+Par exemple, pour lancer le problème des producers/consumers on peut faire : `make clean && make && ./bin/binary -c 4 -p 4` et on peut rajouter `-v` pour le mode verbose.
 
 ## Arguments possibles du programme
 ### Flags
 - `-v`: active le mode verbose (désactivé si absent)
-- `-o`: utilise les primitives de synchronisation de pthread (si absent, utilise nos primitives basées sur un lock test and test and set)
+- `-o`: utilise les primitives de synchronisation de pthread (si absent, utilise nos primitives basées sur un lock test-and-test-and-set)
 ### Problèmes
 #### Philosophes
 - `-N [n_threads]`: lance le problème des philosophes avec `n_threads` threads (0 par default).
@@ -36,7 +37,7 @@ Le makefile contient une série de targets qui permettent de lancer toutes sorte
 - `make reader_writer` exactement comme `make producer_consumer`
 - `make test_and_set` nettoie, compile et fait tourner le programme avec les arguments pour tester le spinlock test and set
 - `make test_and_test_and_set` comme `make test_and_set` mais pour le spinlock test and test and set
-- `make semaphore` nettoie, compile et lance le programme avec les arguments pour tester notre implémentation de semaphore (basé sur notre lock Test and test and set)
+- `make semaphore` nettoie, compile et lance le programme avec les arguments pour tester notre implémentation de semaphore (basé sur notre lock Test-and-test-and-set)
 - `make graphs` lance le script de test de performance qui va tester tous les programmes avec nos locks/semaphores et celle de pthread, puis lance le script python pour générer les graphes (tous les graphes se trouvent dans `./data`)
 
 ## Organisation
