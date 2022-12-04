@@ -36,19 +36,22 @@ def plot_file(new_problem, pthread_problem):
     extension = ""
     if USING_INGI_DATA:
         extension += "_server"
+
+    # read and compute the data for the first problem (or version with our sync primitives)
     with open(f"{file_path}{new_problem}{extension}.csv") as file:
         reader = csv.reader(file, delimiter=",")
         for row in reader:
-            threads.append(int(row[0]))
+            threads.append(int(row[0]))  # this is the number of threads for the run
             float_row = []
             for i in row[1:]:
-                time_list = i.split(";")
-                duration = float(time_list[0]) - float(time_list[1])
+                time_list = i.split(";")  # contains the end time followed by the start time
+                duration = float(time_list[0]) - float(time_list[1])  # compute the duration
                 float_row.append(duration)
-            stdev = statistics.stdev(float_row)
+            stdev = statistics.stdev(float_row)  # compute the standard deviation
             y_err.append(stdev)
-            y.append(statistics.mean(float_row))
+            y.append(statistics.mean(float_row))  # compute the mean of the durations
 
+    # read and compute data for the second problem (or version with the pthread sync primitives)
     with open(f"{file_path}{pthread_problem}{extension}.csv") as f2:
         reader2 = csv.reader(f2, delimiter=",")
         for row2 in reader2:
@@ -64,8 +67,6 @@ def plot_file(new_problem, pthread_problem):
 
     width = 10
     height = 8
-
-    bar_width = 0.25
 
     X_axis = np.array([i for i in range(len(threads))])
     X_labels = [str(i) for i in threads if i % 2 == 0]
@@ -90,15 +91,15 @@ def plot_file(new_problem, pthread_problem):
     plt.grid(alpha=0.4, zorder=0)
     plt.legend()
     plt.savefig(f'{file_path}figure_{new_problem}.png', dpi=400, transparent=False)
-    # plt.show()
 
 
 def main():
-    for new_value, pthread_value in [(CurrentProblem.PHILOSOPHERS.value, CurrentProblem.PHILOSOPHERS_pthread.value), (
-            CurrentProblem.PRODUCER_CONSUMER.value, CurrentProblem.PRODUCER_CONSUMER_pthread.value),
-                                     (CurrentProblem.READER_WRITER.value, CurrentProblem.READER_WRITER_pthread.value), (
-                                             CurrentProblem.TEST_AND_SET_LOCK.value,
-                                             CurrentProblem.TEST_AND_TEST_AND_SET_LOCK.value)]:
+    for new_value, pthread_value in [
+        (CurrentProblem.PHILOSOPHERS.value, CurrentProblem.PHILOSOPHERS_pthread.value),
+        (CurrentProblem.PRODUCER_CONSUMER.value, CurrentProblem.PRODUCER_CONSUMER_pthread.value),
+        (CurrentProblem.READER_WRITER.value, CurrentProblem.READER_WRITER_pthread.value),
+        (CurrentProblem.TEST_AND_SET_LOCK.value, CurrentProblem.TEST_AND_TEST_AND_SET_LOCK.value)
+    ]:
         plot_file(new_value, pthread_value)
 
 
