@@ -1,6 +1,6 @@
 # Projet 1 LINFO1252, groupe 17 Vendredi
-- **Hugo Delporte**, noma: 47142000
-- **Corentin Detry**, noma: 60672000
+- **Hugo Delporte**
+- **Corentin Detry**
 
 ## Instructions
 Pour lancer le projet, vous pouvez utiliser une des targets dans le makefile pour clean, compiler et lancer un problème avec un nombre prédéfinis de threads.
